@@ -155,7 +155,7 @@ networks:
 ## Manual backup
 The backup script (ncbu.sh) can be run manually from within the container.  Alternatively, it can be run at any time with the following docker exec command:
 ```
-docker exec nextcloud-bu ncbu.sh
+$ docker exec nextcloud-bu ncbu.sh
 ```
 If different, change "nextcloud-bu" to the appropriate container name.
 
@@ -166,10 +166,15 @@ The process to restore nextcloud and the associated database from backups follow
 	* The directory containing the backups (./nextcloud-bu in accordance with the example above).
 2. Run docker-compose:
 ```
-docker-compose up -d
+$ docker-compose up -d
 ```
 3. Once running, initiate the ncbu_restore.sh script.  This may take some time.
 ```
-docker exec nextcloud-bu ncbu_restore.sh
+$ docker exec nextcloud-bu ncbu_restore.sh
 ```
-4. Done.
+4. If the restoration is just to revert to an earlier snapshot then you should be done.  If the restoration was used to initialise nextcloud and the database on a clean system, then you may now need to bring the containers down then back up again with the newly restored database.  In this case you should run the restoration script again to exit from maintenance mode and run a file scan.
+```
+$ docker compose down
+$ docker-compose up -d
+$ docker exec nextcloud-bu ncbu_restore.sh
+```
