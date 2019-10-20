@@ -1,9 +1,9 @@
 #! /bin/bash
 
-TIMESTAMP="$(date +%D-%T)"
+TIMESTAMP () { date +%D-%T; }
 
 echo
-echo -e "${TIMESTAMP} - Initialising ncbu (nextcloud-backup)..."
+echo -e "$(TIMESTAMP) - Initialising ncbu (nextcloud-backup)..."
 
 ## Check environment variables defining nextcloud app and database were provided.
 ## Nextcloud app container required but the backup can proceed without the databse container.
@@ -11,7 +11,7 @@ echo -e "Checking environment variables provided:"
 echo -e "NEXTCLOUD_CONTAINER=${NEXTCLOUD_CONTAINER}"
 echo -e "NEXTCLOUD_DATABASE_CONTAINER=${NEXTCLOUD_DATABASE_CONTAINER}"
 if [[ -z "${NEXTCLOUD_CONTAINER}" ]]; then
-        echo -e "${TIMESTAMP} - NEXTCLOUD_CONTAINER not provied.  Quitting"
+        echo -e "$(TIMESTAMP) - NEXTCLOUD_CONTAINER not provied.  Quitting"
         exit 1
 fi
 
@@ -30,9 +30,9 @@ if [ ! -z "$(ls -A /mnt/nextcloud_db)" ]; then
 fi
 
 ## Set the crontab to execute the backup script in accordanmce with the provided timing.
-echo -e "Updating crontab with: \"${NEXTCLOUD_BACKUP_CRON} /ncbu_scripts/ncbu.sh\""
-echo -e "${NEXTCLOUD_BACKUP_CRON} /ncbu_scripts/ncbu.sh" > /var/spool/cron/crontabs/root
+echo -e "Updating crontab with: \"${NEXTCLOUD_BACKUP_CRON} ncbu.sh\""
+echo -e "${NEXTCLOUD_BACKUP_CRON} ncbu.sh" > /var/spool/cron/crontabs/root
 
 ## Run crond (i.e. all set, just waiting for the specified time to trigger the backup script.)
-echo -e "${TIMESTAMP} - Running crond in the foreground..."
+echo -e "$(TIMESTAMP) - Running crond in the foreground..."
 crond -f
