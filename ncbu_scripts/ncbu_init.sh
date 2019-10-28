@@ -1,5 +1,8 @@
 #! /bin/bash
 
+## This script is the entry point for the ncbu container.
+## It does some basic error checkings, ets up the cronjob then initiates crond in the foreground.
+
 TIMESTAMP () { date +%D-%T; }
 
 echo
@@ -18,16 +21,11 @@ fi
 ## Check volumes for the nextcloud and database were provided correctly.
 ## Nextcloud volume required but the backup can proceed without the databse volume.
 echo -e "Checking mounted volumes:"
-if [ ! -z "$(ls -A /mnt/nextcloud_app)" ]; then
-        echo -e "Nextcloud app volume successfully mounted to /mnt/nextcloud_app"
-else
-        echo -e "Defined nextcloud app volume missing or empty.  Quitting"
-        exit 1
-fi
+if [ -n "$(ls -A /mnt/nextcloud_app)" ];        then echo -e "Nextcloud app volume successfully mounted to /mnt/nextcloud_app"
+                                                else echo -e "Nextcloud app volume missing, empty or not defined."; fi
 
-if [ ! -z "$(ls -A /mnt/nextcloud_db)" ]; then
-        echo -e "Nextcloud database volume successfully mounted to /mnt/nextcloud_app"
-fi
+if [ -n "$(ls -A /mnt/nextcloud_db)" ];         then echo -e "Nextcloud database volume successfully mounted to /mnt/nextcloud_db"
+                                                else echo -e "Nextcloud database volume missing, empty or not defined."; fi
 
 ## Set the crontab to execute the backup script in accordanmce with the provided timing.
 echo -e "Updating crontab with: \"${NEXTCLOUD_BACKUP_CRON} ncbu.sh\""

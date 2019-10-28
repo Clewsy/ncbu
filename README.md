@@ -40,7 +40,7 @@ services:
     image: jwilder/nginx-proxy:alpine
     container_name: nginx-proxy
     networks:
-      - yourdomain.com_network
+      - clews.pro_network
     labels:
       - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy=true"
     ports:
@@ -51,6 +51,7 @@ services:
       - ./nginx-proxy/vhost.d:/etc/nginx/vhost.d:rw
       - ./nginx-proxy/html:/usr/share/nginx/html:rw
       - ./nginx-proxy/certs:/etc/nginx/certs:ro
+      - ./nginx-proxy/clews.pro_custom_proxy_settings.conf:/etc/nginx/conf.d/my_custom_proxy_settings.conf      #added to enable nc uploads>1MB (client_max_body_size 500m)
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/tmp/docker.sock:ro
     restart: unless-stopped
@@ -60,7 +61,7 @@ services:
     image: jrcs/letsencrypt-nginx-proxy-companion
     container_name: letsencrypt
     networks:
-      - yourdomain.com_network
+      - clews.pro_network
     depends_on:
       - nginx-proxy
     volumes:
@@ -73,17 +74,21 @@ services:
 
 ######################################### MariaDB database (for nextcloud) container
   nextcloud-db:
-    image: mariadb
+    image: linuxserver/mariadb
     container_name: nextcloud-db
     networks:
-      - yourdomain.com_network
+      - clews.pro_network
+    ports:
+      - 3306:3306
     environment:
-      - MYSQL_ROOT_PASSWORD="${MARIADB_NEXTCLOUD_MYSQL_ROOT_PASSWORD}"
+      - PUID=1000
+      - PGID=1000
+      - MYSQL_ROOT_PASSWORD=${MARIADB_NEXTCLOUD_MYSQL_ROOT_PASSWORD}
       - MYSQL_USER=nextcloud
-      - MYSQL_PASSWORD="${MARIADB_NEXTCLOUD_MYSQL_PASSWORD}"
+      - MYSQL_PASSWORD=${MARIADB_NEXTCLOUD_MYSQL_PASSWORD}
       - MYSQL_DATABASE=nextcloud
     volumes:
-      - nextcloud-db:/var/lib/mysql
+      - nextcloud-db:/config
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
 
@@ -92,15 +97,15 @@ services:
     image: nextcloud:latest
     container_name: nextcloud-app
     networks:
-      - yourdomain.com_network
+      - clews.pro_network
     depends_on:
       - letsencrypt
       - nginx-proxy
       - nextcloud-db
     environment:
-      - VIRTUAL_HOST=nextcloud.yourdomain.com
-      - LETSENCRYPT_HOST=nextcloud.yourdomain.com
-      - LETSENCRYPT_EMAIL="${NEXTCLOUD_APP_LETSENCRYPT_EMAIL}"
+      - VIRTUAL_HOST=nextcloud.clews.pro
+      - LETSENCRYPT_HOST=nextcloud.clews.pro
+      - LETSENCRYPT_EMAIL=${NEXTCLOUD_APP_LETSENCRYPT_EMAIL}  
     volumes:
       - nextcloud-app:/var/www/html
       - /etc/localtime:/etc/localtime:ro
@@ -121,33 +126,33 @@ services:
     - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
 
-######################################### Nextcloud backup container (for periodically copying data and database)
+######################################### Nextcloud backup container (for periodic physical snapshots of data and database volumes)
   nextcloud-bu:
     image: clewsy/ncbu
     container_name: nextcloud-bu
     networks:
-      - yourdomain.com_network
+      - clews.pro_network
     depends_on:
     - nextcloud-app
     - nextcloud-db
     environment:
-    - NEXTCLOUD_CONTAINER=nextcloud-app
-    - NEXTCLOUD_DATABASE_CONTAINER=nextcloud-db
-    - NEXTCLOUD_BACKUP_CRON=0 1 * * *
+    - NEXTCLOUD_CONTAINER=nextcloud-app                 # Name of the nextcloud container.
+    - NEXTCLOUD_DATABASE_CONTAINER=nextcloud-db         # Name of the nextcloud database container.
+    - NEXTCLOUD_BACKUP_CRON=0 0 * * *                   # Run at midnight.
     volumes:
-    - /var/run/docker.sock:/var/run/docker.sock:ro
-    - /etc/localtime:/etc/localtime:ro
-    - nextcloud-app:/mnt/nextcloud_app
-    - nextcloud-db:/mnt/nextcloud_db
-    - ./nextcloud-bu:/backup
+    - /var/run/docker.sock:/var/run/docker.sock         # Allows container to access another container.
+    - /etc/localtime:/etc/localtime:ro                  # Use to sync time so that the crond runs as expected.
+    - nextcloud-app:/mnt/nextcloud_app:ro               # Must match the docker-managed nextcloud app volume (/var/www/html).
+    - nextcloud-db:/mnt/nextcloud_db:ro                 # Must match the docker-managed nextcloud database volume (/var/lib/mysql).
+    - ./nextcloud-bu:/backup                            # Convenient location for the backup.
     restart: unless-stopped
 
 ######################################### Docker-managed volumes
 volumes:
   nextcloud-app:
-  nextcloud-db:   #Let docker manage the db volume.  Note, db is backed up by con-job on host.
+  nextcloud-db:
 
-######################################### Docker network
+######################################### Docker-managed networks
 networks:
   clews.pro_network:
 ```
