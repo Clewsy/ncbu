@@ -1,8 +1,6 @@
 # ncbu
 
-
 Once configured, this docker container automates backup of my nextcloud (data and database) and also provdides a simple way to restore from said backup.
-
 
 ## Build the Container Image
 
@@ -166,14 +164,14 @@ networks:
   clews.pro_network:
 ```
 
-## Manual backup
+## Manual Backup
 The backup script (ncbu.sh) can be run manually from within the container.  Alternatively, it can be run at any time with the following docker exec command:
 ```
 $ docker exec nextcloud-bu ncbu.sh
 ```
 If different, change "nextcloud-bu" to the appropriate container name.
 
-## Restore from backup.
+## Restore from Backup
 The process to restore nextcloud and the associated database from backups follows:
 1. Set up the staging area.  This location should contain:
 	* The docker-compose.yml file
@@ -182,13 +180,13 @@ The process to restore nextcloud and the associated database from backups follow
 ```
 $ docker-compose up -d
 ```
-3. Once running, initiate the ncbu_restore.sh script.  This may take some time.
+3. If the restoration is simply to revert to an earlier snapshot then continue to setp 4.  If the restoration is to be used with a fresh nextcloud instance (e.g. migration to another host machine) then initialise the nextcloud instance with the same admin username and database configuration settings that were present during the last backup.
+4. Initiate the ncbu_restore.sh script.  This may take some time.
 ```
 $ docker exec nextcloud-bu ncbu_restore.sh
 ```
-4. If the restoration is just to revert to an earlier snapshot then you should be done.  If the restoration was used to initialise nextcloud and the database on a clean system, then you may now need to bring the containers down then back up again with the newly restored database.  In this case you should run the restoration script again to exit from maintenance mode and run a file scan.
+5. The restoration should be complete.  If any settings don't seem to be restored, bring the containers down and then restart them:
 ```
 $ docker compose down
 $ docker-compose up -d
-$ docker exec nextcloud-bu ncbu_restore.sh
 ```
