@@ -10,7 +10,7 @@ The following commands will build the container image on the local host (assumin
 ```
 $ git clone git@gitlab.com:clewsy/ncbu
 $ cd ncbu
-$ docker build -t ncbu .
+$ docker build -t clewsy/ncbu .
 ```
 
 ## Configuration
