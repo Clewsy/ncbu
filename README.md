@@ -4,6 +4,15 @@
 Once configured, this docker container automates backup of my nextcloud (data and database) and also provdides a simple way to restore from said backup.
 
 
+## Build the Container Image
+
+The following commands will build the container image on the local host (assuming git and docker are installed):
+```
+$ git clone git@gitlab.com:clewsy/ncbu
+$ cd ncbu
+$ docker build -t ncbu .
+```
+
 ## Configuration
 
 This backup method is intended to be implemented with a docker-compose.yml file wherein containers are also configured for nextcloud and a database.  The ncbu container can be configured with the following definitions:
