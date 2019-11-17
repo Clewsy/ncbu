@@ -2,7 +2,7 @@
 
 ## This script must be called manually from witin the ncbu container or externally (e.g. "docker exec <ncbu-container-name> ncbu_restore.sh")
 ## The script will attempt to restore a nextcloud instance (app and database) from a backup that was previously created by the ncbu.sh script.
-## If restoration is required for migration to a new host, ensure a new nextcloud instance is initialised wit hthe same admin user and database
+## If restoration is required for migration to a new host, ensure a new nextcloud instance is initialised with the same admin user and database
 ## configurations that were in place during the last backup. 
 
 TIMESTAMP () { date +%Y-%m-%d\ %T; }

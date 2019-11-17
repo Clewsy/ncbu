@@ -180,7 +180,7 @@ The process to restore nextcloud and the associated database from backups follow
 ```
 $ docker-compose up -d
 ```
-3. If the restoration is simply to revert to an earlier snapshot then continue to setp 4.  If the restoration is to be used with a fresh nextcloud instance (e.g. migration to another host machine) then initialise the nextcloud instance with the same admin username and database configuration settings that were present during the last backup.
+3. If the restoration is simply to revert to an earlier snapshot then continue to step 4.  If the restoration is to be used with a fresh nextcloud instance (e.g. migration to another host machine) then initialise the nextcloud instance with the same admin username and database configuration settings that were present during the last backup.
 4. Initiate the ncbu_restore.sh script.  This may take some time.
 ```
 $ docker exec nextcloud-bu ncbu_restore.sh
