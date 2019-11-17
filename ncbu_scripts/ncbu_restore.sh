@@ -5,7 +5,7 @@
 ## If restoration is required for migration to a new host, ensure a new nextcloud instance is initialised wit hthe same admin user and database
 ## configurations that were in place during the last backup. 
 
-TIMESTAMP () { date +%D-%T; }
+TIMESTAMP () { date +%Y-%m-%d\ %T; }
 
 echo
 echo -e "$(TIMESTAMP) - Running ncbu restore..."

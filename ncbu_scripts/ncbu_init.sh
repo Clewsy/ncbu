@@ -3,7 +3,7 @@
 ## This script is the entry point for the ncbu container.
 ## It does some basic error checkings, ets up the cronjob then initiates crond in the foreground.
 
-TIMESTAMP () { date +%D-%T; }
+TIMESTAMP () { date +%Y-%m-%d\ %T; }
 
 echo
 echo -e "$(TIMESTAMP) - Initialising ncbu (nextcloud-backup)..."

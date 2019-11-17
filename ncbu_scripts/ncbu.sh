@@ -3,7 +3,7 @@
 ## This is the backup script that is called as a cron job.
 ## It will put nextcloud into maintenance mode then create physical snapshot backups of the nextcloud app and nextcloud database volumes. 
 
-TIMESTAMP () { date +%D-%T; }
+TIMESTAMP () { date +%Y-%m-%d\ %T; }
 
 echo
 echo -e "$(TIMESTAMP) - Running ncbu (nextcloud backup)..."
