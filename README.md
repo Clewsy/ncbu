@@ -10,7 +10,7 @@ $ git clone git@gitlab.com:clewsy/ncbu
 $ cd ncbu
 $ docker build -t ncbu/ncbu .
 ```
-Altenatively the image cn be pulled directly from docker hub:
+Altenatively the image can be pulled directly from docker hub:
 ```
 $ docker pull ncbu/ncbu
 ```
@@ -51,7 +51,7 @@ services:
     image: jwilder/nginx-proxy:alpine
     container_name: nginx-proxy
     networks:
-      - clews.pro_network
+      - your.site_network
     labels:
       - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy=true"
     ports:
@@ -62,7 +62,7 @@ services:
       - ./nginx-proxy/vhost.d:/etc/nginx/vhost.d:rw
       - ./nginx-proxy/html:/usr/share/nginx/html:rw
       - ./nginx-proxy/certs:/etc/nginx/certs:ro
-      - ./nginx-proxy/clews.pro_custom_proxy_settings.conf:/etc/nginx/conf.d/my_custom_proxy_settings.conf      #added to enable nc uploads>1MB (client_max_body_size 500m)
+      - ./nginx-proxy/your.site_custom_proxy_settings.conf:/etc/nginx/conf.d/my_custom_proxy_settings.conf      #added to enable nc uploads>1MB (client_max_body_size 500m)
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/tmp/docker.sock:ro
     restart: unless-stopped
@@ -72,7 +72,7 @@ services:
     image: jrcs/letsencrypt-nginx-proxy-companion
     container_name: letsencrypt
     networks:
-      - clews.pro_network
+      - your.site_network
     depends_on:
       - nginx-proxy
     volumes:
@@ -88,7 +88,7 @@ services:
     image: linuxserver/mariadb
     container_name: nextcloud-db
     networks:
-      - clews.pro_network
+      - your.site_network
     ports:
       - 3306:3306
     environment:
@@ -108,14 +108,14 @@ services:
     image: nextcloud:latest
     container_name: nextcloud-app
     networks:
-      - clews.pro_network
+      - your.site_network
     depends_on:
       - letsencrypt
       - nginx-proxy
       - nextcloud-db
     environment:
-      - VIRTUAL_HOST=nextcloud.clews.pro
-      - LETSENCRYPT_HOST=nextcloud.clews.pro
+      - VIRTUAL_HOST=nextcloud.your.site
+      - LETSENCRYPT_HOST=nextcloud.your.site
       - LETSENCRYPT_EMAIL=${NEXTCLOUD_APP_LETSENCRYPT_EMAIL}  
     volumes:
       - nextcloud-app:/var/www/html
@@ -139,10 +139,10 @@ services:
 
 ######################################### Nextcloud backup container (for periodic physical snapshots of data and database volumes)
   nextcloud-bu:
-    image: clewsy/ncbu
+    image: ncbu/ncbu
     container_name: nextcloud-bu
     networks:
-      - clews.pro_network
+      - your.site.pro_network
     depends_on:
     - nextcloud-app
     - nextcloud-db
@@ -165,7 +165,7 @@ volumes:
 
 ######################################### Docker-managed networks
 networks:
-  clews.pro_network:
+  your.site_network:
 ```
 
 ## Manual Backup
