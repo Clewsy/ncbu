@@ -28,17 +28,17 @@ This backup method is intended to be implemented with a docker-compose.yml file 
 	* /var/run/docker.sock - Must be bound to the host's equivalent to enable inter-container interaction.
 	* /etc/localtime - Should be bound to the host's equivalent so that the cron job runs when expected.
 	* /mnt/nextcloud_app - Must be bound to the same volume as the nextcloud container's data.
-	* /mnt/nextcloud_db - Must be bound to the same volume as the database container's data.
+	* /mnt/nextcloud_db - Optional.  To back up the database files, this must be bound to the same volume as the database container's data.
 	* /backup - Should be bound to a convenient user-accessible location.
 
-The following example docker-compose.ynl file is configured so that the nextcloud and database (mariadb) containers use docker to manage their volumes.  The ncbu container (nextcloud-bu) will therefore sync both of these volumes to ./ncbu/nextcloud_app and ./ncbu/nextcloud_db respectively.  The backup in thgis example will occur every day at 0100hrs.
+The following example docker-compose.yml file is configured so that the nextcloud and database (mariadb) containers use docker to manage their volumes.  The ncbu container (nextcloud-bu) will therefore sync both of these volumes to ./nextcloud-bu/nextcloud_app and ./nextcloud-bu/nextcloud_db respectively.  The backup in this example will occur every day at 0100hrs.
 
 Notes:
-* This example also uses letsencrypt and nginx-proxy containers for external https access.
-* The nextcloud-cron container is used to periodically run nextcloud's cron.php script.
-* Sensitive details can be entered directly into the *.yml or (as per this example) reference an external .env file (e.g. MARIADB_NEXTCLOUD_MYSQL_PASSWORD is defined in .env).
+* This example also uses [letsencrypt-nginx-proxy-companion](https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion) and [nginx-proxy](https://hub.docker.com/r/jwilder/nginx-proxy) containers for external https access.
+* The [nextcloud-cronjob](https://hub.docker.com/r/rcdailey/nextcloud-cronjob) container is used to periodically run nextcloud's cron.php script.
+* Sensitive details can be entered directly into the *.yml or (as per this example) reference an external .env file (e.g. the password for the nextcloud MariaDB database is defined in .env by a line: MARIADB_NEXTCLOUD_MYSQL_PASSWORD=secure_password )
 * The backups are stored at "./nextcloud-bu/". The intention is for this directory to be regularly synced off-site.
-* You may encounter difficulty syncing the database files.  Issues arise if the UID and GID of the user within the database container do not match a user on the host.  To avoid this, I recommend using the mariadb docker image created by linuxserver.io wherein you can specify the UID and GID: [linuxserver.io mariadb image at docker hub](https://hub.docker.com/r/linuxserver/mariadb)
+* You may encounter difficulty syncing the database files should you use the official MariaDB docker image.  Issues arise if the UID and GID of the user within the database container do not match a user on the host.  To avoid this, I recommend using the mariadb docker image created by linuxserver.io (as per example below) wherein you can specify the UID and GID: [linuxserver.io mariadb image at docker hub](https://hub.docker.com/r/linuxserver/mariadb)
 
 ### docker-compose.yml
 ```
@@ -187,7 +187,7 @@ $ docker-compose up -d
 3. If the restoration is simply to revert to an earlier snapshot then continue to step 4.  If the restoration is to be used with a fresh nextcloud instance (e.g. migration to another host machine) then initialise the nextcloud instance with the same admin username and database configuration settings that were present during the last backup.  In the example above these settings would be:
 	* Configure the database: MySQL/MariaDB
 	* Database user: nextcloud
-	* Database password: MARIADB_NEXTCLOUD_MYSQL_PASSWORD
+	* Database password: <MARIADB_NEXTCLOUD_MYSQL_PASSWORD> (as defined within .env)
 	* Database name: nextcloud
 	* Database host: nextcloud-db
 4. Initiate the ncbu_restore.sh script.  This may take some time.
