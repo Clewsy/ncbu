@@ -1,6 +1,6 @@
 # ncbu
 
-Once configured, this docker container automates backup of my nextcloud (data and database) and also provdides a simple way to restore from said backup.
+Once configured, this docker container automates backup of a nextcloud instance (data and database) and also provdides a simple way to restore from said backup.
 
 ## Build the Container Image
 
@@ -8,7 +8,11 @@ The following commands will build the container image on the local host (assumin
 ```
 $ git clone git@gitlab.com:clewsy/ncbu
 $ cd ncbu
-$ docker build -t clewsy/ncbu .
+$ docker build -t ncbu/ncbu .
+```
+Altenatively the image cn be pulled directly from docker hub:
+```
+$ docker pull ncbu/ncbu
 ```
 
 ## Configuration
@@ -18,7 +22,7 @@ This backup method is intended to be implemented with a docker-compose.yml file 
 	* a common network should be defined such that the ncbu container can interact with the nextcloud container.
 * environment:
 	* NEXTCLOUD_CONTAINER - The name given to the nextcloud container.  This is required.
-	* NEXTCLOUD_DATABASE_CONTAINER - The namne given to the database container (such as mariadb or mysql).  Can be ommitted - data will still be backed up.
+	* NEXTCLOUD_DATABASE_CONTAINER - The name given to the database container (such as mariadb or mysql).  Can be ommitted - data will still be backed up.
 	* NEXTCLOUD_BACKUP_CRON - Cron-style config for setting when the backup script will be run.  Defaults to midnight daily (0 0 * * *) if ommitted.
 * volumes:
 	* /var/run/docker.sock - Must be bound to the host's equivalent to enable inter-container interaction.
@@ -27,14 +31,14 @@ This backup method is intended to be implemented with a docker-compose.yml file 
 	* /mnt/nextcloud_db - Must be bound to the same volume as the database container's data.
 	* /backup - Should be bound to a convenient user-accessible location.
 
-The following example docker-compose.ynl file is configured so that the nextcloud and database (mariadb) containers use docker to manage their volumes.  The ncbu container (nextcloud-bu) will therefore sync both of these volumes to ./ncbu/nextcloud_app and ./ncbu/nextcloud_bu respectively.  The backup will occur every day at 0100hrs.
+The following example docker-compose.ynl file is configured so that the nextcloud and database (mariadb) containers use docker to manage their volumes.  The ncbu container (nextcloud-bu) will therefore sync both of these volumes to ./ncbu/nextcloud_app and ./ncbu/nextcloud_db respectively.  The backup in thgis example will occur every day at 0100hrs.
 
 Notes:
 * This example also uses letsencrypt and nginx-proxy containers for external https access.
 * The nextcloud-cron container is used to periodically run nextcloud's cron.php script.
-* Sensetive details can be entered directly into the *.yml or (as per this example) reference an external .env file (e.g. MARIADB_NEXTCLOUD_MYSQL_PASSWORD is defined in .env).
+* Sensitive details can be entered directly into the *.yml or (as per this example) reference an external .env file (e.g. MARIADB_NEXTCLOUD_MYSQL_PASSWORD is defined in .env).
 * The backups are stored at "./nextcloud-bu/". The intention is for this directory to be regularly synced off-site.
-
+* You may encounter difficulty syncing the database files.  Issues arise if the UID and GID of the user within the database container do not match a user on the host.  To avoid this, I recommend using the mariadb docker image created by linuxserver.io wherein you can specify the UID and GID: [linuxserver.io mariadb image at docker hub](https://hub.docker.com/r/linuxserver/mariadb)
 
 ### docker-compose.yml
 ```
@@ -145,7 +149,7 @@ services:
     environment:
     - NEXTCLOUD_CONTAINER=nextcloud-app                 # Name of the nextcloud container.
     - NEXTCLOUD_DATABASE_CONTAINER=nextcloud-db         # Name of the nextcloud database container.
-    - NEXTCLOUD_BACKUP_CRON=0 0 * * *                   # Run at midnight.
+    - NEXTCLOUD_BACKUP_CRON=0 1 * * *                   # Run daily at 0100hrs.
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock         # Allows container to access another container.
     - /etc/localtime:/etc/localtime:ro                  # Use to sync time so that the crond runs as expected.
@@ -173,14 +177,19 @@ If different, change "nextcloud-bu" to the appropriate container name.
 
 ## Restore from Backup
 The process to restore nextcloud and the associated database from backups follows:
-1. Set up the staging area.  This location should contain:
+1. Set up the staging directory.  This location should contain:
 	* The docker-compose.yml file
 	* The directory containing the backups (./nextcloud-bu in accordance with the example above).
 2. Run docker-compose:
 ```
 $ docker-compose up -d
 ```
-3. If the restoration is simply to revert to an earlier snapshot then continue to step 4.  If the restoration is to be used with a fresh nextcloud instance (e.g. migration to another host machine) then initialise the nextcloud instance with the same admin username and database configuration settings that were present during the last backup.
+3. If the restoration is simply to revert to an earlier snapshot then continue to step 4.  If the restoration is to be used with a fresh nextcloud instance (e.g. migration to another host machine) then initialise the nextcloud instance with the same admin username and database configuration settings that were present during the last backup.  In the example above these settings would be:
+	* Configure the database: MySQL/MariaDB
+	* Database user: nextcloud
+	* Database password: MARIADB_NEXTCLOUD_MYSQL_PASSWORD
+	* Database name: nextcloud
+	* Database host: nextcloud-db
 4. Initiate the ncbu_restore.sh script.  This may take some time.
 ```
 $ docker exec nextcloud-bu ncbu_restore.sh
