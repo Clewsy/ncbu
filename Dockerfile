@@ -24,9 +24,9 @@ ENV NEXTCLOUD_BACKUP_CRON="0 0 * * *"
 # /backup		This is the destination for the backup files.
 # /mnt/nextcloud_app 	This is where the current nextcloud app data files will be mounted.
 # /mnt/nextcloud_db 	This is where the current nextcloud database files will be mounted.
-RUN mkdir /backup
-RUN mkdir -p /mnt/nextcloud_app
-RUN mkdir -p /mnt/nextcloud_db
+RUN mkdir -p	/backup \
+		/mnt/nextcloud_app \
+		/mnt/nextcloud_db
 
 # Define the volumes for docker access.
 # /mnt/nextcloud_app		The docker run command or docker-compose.yml file should mount the docker-managed nextcloud app volume to this
