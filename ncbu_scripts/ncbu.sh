@@ -19,9 +19,9 @@ echo -e "$(TIMESTAMP) - Finished nextcloud data sync."
 
 ## If a database container was defined, sync the database volume to the nextcloud-bu volume.
 if [[ -n "${NEXTCLOUD_DATABASE_CONTAINER}" ]]; then
-        echo -e "$(TIMESTAMP) - Nextcloud database backup (physical copy): Syncing ${NEXTCLOUD_DATABASE_CONTAINER} volume to /backup..."
-        rsync --acls --archive --verbose --one-file-system --delete --human-readable --progress /mnt/nextcloud_db/* /backup/nextcloud_db/.
-        echo -e "$(TIMESTAMP) - Finished nextcloud database sync."
+	echo -e "$(TIMESTAMP) - Nextcloud database backup (physical copy): Syncing ${NEXTCLOUD_DATABASE_CONTAINER} volume to /backup..."
+	rsync --acls --archive --verbose --one-file-system --delete --human-readable --progress /mnt/nextcloud_db/* /backup/nextcloud_db/.
+	echo -e "$(TIMESTAMP) - Finished nextcloud database sync."
 fi
 
 ## Take nextcloud out of maintenance mode so that normal usage can resume.

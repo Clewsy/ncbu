@@ -39,6 +39,7 @@ Notes:
 * Sensitive details can be entered directly into the *.yml or (as per this example) reference an external .env file (e.g. the password for the nextcloud MariaDB database is defined in .env by a line: MARIADB_NEXTCLOUD_MYSQL_PASSWORD=secure_password )
 * The backups are stored at "./nextcloud-bu/". The intention is for this directory to be regularly synced off-site.
 * You may encounter difficulty syncing the database files should you use the official MariaDB docker image.  Issues arise if the UID and GID of the user within the database container do not match a user on the host.  To avoid this, I recommend using the mariadb docker image created by linuxserver.io (as per example below) wherein you can specify the UID and GID: [linuxserver.io mariadb image at docker hub](https://hub.docker.com/r/linuxserver/mariadb)
+* Similarly to the note above, be sure to confirm read access to all the files created by an ncbu backup.  If, for example, the backup is being synced off-site, the user duplicating the backup may not have access by default to read files owned by user www-data.  In this example, adding the user to the www-data group may be sufficient to enable read access.
 
 ### docker-compose.yml
 ```

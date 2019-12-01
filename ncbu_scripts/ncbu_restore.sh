@@ -24,9 +24,9 @@ fi
 ## If a database container was defined, sync the ncbu nextcloud database backup to the nextcloud database volume.
 if [[ -n "${NEXTCLOUD_DATABASE_CONTAINER}" ]]; then
 	if [[ -n "$(ls -A /backup/nextcloud_db)" ]]; then	## First ensure there is data in the backup.
-	        echo -e "$(TIMESTAMP) - Nextcloud database restore from ncbu physical copy: Syncing /backup/nextcloud_db to ${NEXTCLOUD_DATABASE_CONTAINER} volume..."
-	        rsync --acls --archive --verbose --one-file-system --delete --human-readable --progress /backup/nextcloud_db/* /mnt/nextcloud_db/.
-	        echo -e "$(TIMESTAMP) - Finished nextcloud database sync from backup."
+		echo -e "$(TIMESTAMP) - Nextcloud database restore from ncbu physical copy: Syncing /backup/nextcloud_db to ${NEXTCLOUD_DATABASE_CONTAINER} volume..."
+		rsync --acls --archive --verbose --one-file-system --delete --human-readable --progress /backup/nextcloud_db/* /mnt/nextcloud_db/.
+		echo -e "$(TIMESTAMP) - Finished nextcloud database sync from backup."
 	fi
 fi
 
@@ -36,7 +36,7 @@ docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ maintenance
 
 ## Scan the data files and update the cache accordingly.  This may take a while.
 echo -e "$(TIMESTAMP) - Scanning the ${NEXTCLOUD_CONTAINER} data files and updating the cache accordingly."
-echo -e "(This may take a while but the nextcloud instance should be accessible while the scan runs.)"
+echo -e "\t(This may take a while but the nextcloud instance should be accessible while the scan runs.)"
 docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ files:scan --all -v
 
 echo -e "$(TIMESTAMP) - All done."
