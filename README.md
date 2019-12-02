@@ -5,13 +5,13 @@ Once configured, this docker container automates backup of a nextcloud instance 
 ## Build the Container Image
 
 The following commands will build the container image on the local host (assuming git and docker are installed):
-```
+```console
 $ git clone git@gitlab.com:clewsy/ncbu
 $ cd ncbu
 $ docker build -t ncbu/ncbu .
 ```
 Altenatively the image can be pulled directly from docker hub:
-```
+```console
 $ docker pull ncbu/ncbu
 ```
 
@@ -42,7 +42,7 @@ Notes:
 * Similarly to the note above, be sure to confirm read access to all the files created by an ncbu backup.  If, for example, the backup is being synced off-site, the user duplicating the backup may not have access by default to read files owned by user www-data.  In this example, adding the user to the www-data group may be sufficient to enable read access.
 
 ### docker-compose.yml
-```
+```docker
 version: '3'  
 
 services:
@@ -171,7 +171,7 @@ networks:
 
 ## Manual Backup
 The backup script (ncbu.sh) can be run manually from within the container.  Alternatively, it can be run at any time with the following docker exec command:
-```
+```console
 $ docker exec nextcloud-bu ncbu.sh
 ```
 If different, change "nextcloud-bu" to the appropriate container name.
@@ -182,7 +182,7 @@ The process to restore nextcloud and the associated database from backups follow
 	* The docker-compose.yml file
 	* The directory containing the backups (./nextcloud-bu in accordance with the example above).
 2. Run docker-compose:
-```
+```console
 $ docker-compose up -d
 ```
 3. If the restoration is simply to revert to an earlier snapshot then continue to step 4.  If the restoration is to be used with a fresh nextcloud instance (e.g. migration to another host machine) then initialise the nextcloud instance with the same admin username and database configuration settings that were present during the last backup.  In the example above these settings would be:
@@ -192,11 +192,11 @@ $ docker-compose up -d
 	* Database name: nextcloud
 	* Database host: nextcloud-db
 4. Initiate the ncbu_restore.sh script.  This may take some time.
-```
+```console
 $ docker exec nextcloud-bu ncbu_restore.sh
 ```
 5. The restoration should be complete.  If any settings don't seem to be restored, bring the containers down and then restart them:
-```
-$ docker compose down
+```console
+$ docker-compose down
 $ docker-compose up -d
 ```
