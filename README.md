@@ -42,7 +42,7 @@ Notes:
 * Similarly to the note above, be sure to confirm read access to all the files created by an ncbu backup.  If, for example, the backup is being synced off-site, the user duplicating the backup may not have access by default to read files owned by user www-data.  In this example, adding the user to the www-data group may be sufficient to enable read access.
 
 ### docker-compose.yml
-```docker
+```yml
 version: '3'  
 
 services:
