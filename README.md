@@ -10,7 +10,7 @@ $ git clone git@gitlab.com:clewsy/ncbu
 $ cd ncbu
 $ docker build -t ncbu/ncbu .
 ```
-Altenatively the image can be pulled directly from docker hub:
+Alternatively the image can be pulled directly from docker hub:
 ```console
 $ docker pull ncbu/ncbu
 ```
