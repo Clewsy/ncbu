@@ -9,7 +9,7 @@
 ## -v --volume		: Define a volume (map internal to external directory).
 
 docker run \
-	--tty 
+	--tty \
 	--interactive \
 	--name=nextcloud-bu \
 	-env NEXTCLOUD_CONTAINER=nextcloud-app \		## Define the nextcloud app container name.
