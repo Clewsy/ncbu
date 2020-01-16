@@ -8,11 +8,11 @@ The following commands will build the container image on the local host (assumin
 ```console
 $ git clone git@gitlab.com:clewsy/ncbu
 $ cd ncbu
-$ docker build -t ncbu/ncbu .
+$ docker build -t clewsy/ncbu .
 ```
 Alternatively the image can be pulled directly from docker hub:
 ```console
-$ docker pull ncbu/ncbu
+$ docker pull clewsy/ncbu
 ```
 
 ## Configuration
@@ -140,7 +140,7 @@ services:
 
 ######################################### Nextcloud backup container (for periodic physical snapshots of data and database volumes)
   nextcloud-bu:
-    image: ncbu/ncbu
+    image: clewsy/ncbu
     container_name: nextcloud-bu
     networks:
       - your.site.pro_network
