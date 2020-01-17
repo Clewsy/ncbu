@@ -2,10 +2,10 @@
 
 ## An example docker run usage for creating an ncbu container.
 
-##    --name		: Define a name for the container.
-## -e --env		: Set an environment variable.
-## -v --volume		: Define a volume (map internal to external directory).
-## -d --detach		: Run container in background (detach).
+##    --name	: Define a name for the container.
+## -e --env	: Set an environment variable.
+## -v --volume	: Define a volume (map internal to external directory).
+## -d --detach	: Run container in background (detach).
 
 docker run \
 	--name nextcloud-bu_test \
