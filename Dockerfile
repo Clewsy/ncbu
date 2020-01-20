@@ -5,10 +5,9 @@ FROM alpine:latest
 # bash		for running bash scripts.
 # docker	for accessing the nextcloud container and enabling/disabling maintenance mode,
 # rsync		for duplicating nextcloud data and database files.
-RUN	apk update && \
-	apk add bash && \
-	apk add docker && \
-	apk add rsync
+RUN apk add --no-cache	bash \
+			docker \
+			rsync
 
 # Define the environment variables:
 # NEXTCLOUD_EXEC_USER=			The user for accessing the nextcloud container (to enable/disable maintenance mode). www-data by default.
@@ -44,5 +43,5 @@ COPY ncbu_scripts/* /
 ENV PATH=${PATH}:/
 
 # Run the initialisation script.
-ENTRYPOINT [ "ncbu_init.sh" ]
+CMD [ "ncbu_init.sh" ]
 
