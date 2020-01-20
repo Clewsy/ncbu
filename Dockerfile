@@ -3,10 +3,8 @@ FROM alpine:latest
 
 # Update and install additional packages.
 # bash		for running bash scripts.
-# docker	for accessing the nextcloud container and enabling/disabling maintenance mode,
 # rsync		for duplicating nextcloud data and database files.
 RUN apk add --no-cache	bash \
-			docker \
 			rsync
 
 # Define the environment variables:
