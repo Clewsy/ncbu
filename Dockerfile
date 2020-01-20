@@ -1,11 +1,10 @@
-# Download base image: alpine linux.
-FROM alpine:latest
+# Download base image: alpine linux with docker cli.
+FROM alpinelinux/docker-cli
 
 # Update and install additional packages.
 # bash		for running bash scripts.
 # rsync		for duplicating nextcloud data and database files.
 RUN apk add --no-cache	bash \
-			docker \
 			rsync
 
 # Define the environment variables:
