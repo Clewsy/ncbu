@@ -5,6 +5,7 @@ FROM alpine:latest
 # bash		for running bash scripts.
 # rsync		for duplicating nextcloud data and database files.
 RUN apk add --no-cache	bash \
+			docker \
 			rsync
 
 # Define the environment variables:
