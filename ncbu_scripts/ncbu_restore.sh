@@ -17,7 +17,7 @@ docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ maintenance
 ## Sync the ncbu nextcloud data backup to the nextcloud app volume.
 if [[ -n "$(ls -A /backup/nextcloud_app)" ]]; then	## First ensure there is data in the backup.
 	echo -e "$(TIMESTAMP) - Nextcloud data restore from ncbu: Syncing /backup/nextcloud_app to ${NEXTCLOUD_CONTAINER} volume..."
-	rsync --acls --archive --verbose --one-file-system --delete --human-readable --progress /backup/nextcloud_app/* /mnt/nextcloud_app/.
+	rsync --acls --times --perms --archive --verbose --one-file-system --delete --human-readable --progress /backup/nextcloud_app/* /mnt/nextcloud_app/.
 	echo -e "$(TIMESTAMP) - Finished nextcloud data sync from backup."
 fi
 
@@ -25,7 +25,7 @@ fi
 if [[ -n "${NEXTCLOUD_DATABASE_CONTAINER}" ]]; then
 	if [[ -n "$(ls -A /backup/nextcloud_db)" ]]; then	## First ensure there is data in the backup.
 		echo -e "$(TIMESTAMP) - Nextcloud database restore from ncbu physical copy: Syncing /backup/nextcloud_db to ${NEXTCLOUD_DATABASE_CONTAINER} volume..."
-		rsync --acls --archive --verbose --one-file-system --delete --human-readable --progress /backup/nextcloud_db/* /mnt/nextcloud_db/.
+		rsync --acls --times --perms --archive --verbose --one-file-system --delete --human-readable --progress /backup/nextcloud_db/* /mnt/nextcloud_db/.
 		echo -e "$(TIMESTAMP) - Finished nextcloud database sync from backup."
 	fi
 fi
