@@ -3,7 +3,8 @@ FROM alpine
 
 # Update and install additional packages.
 # bash		for running bash scripts.
-# rsync		for duplicating nextcloud data and database files.
+# docker-cli	for running commands in other containers ("docker exec <CMD>").
+# rsync		for syncing nextcloud data and database files.
 RUN apk add --no-cache	bash \
 			docker-cli \
 			rsync
