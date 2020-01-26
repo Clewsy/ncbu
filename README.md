@@ -21,6 +21,7 @@ This backup method is intended to be implemented with a docker-compose.yml file 
 * networks:
 	* a common network should be defined such that the ncbu container can interact with the nextcloud container.
 * environment:
+	* NEXTCLOUD_EXEC_USER - The user ID with permission ot access data and run the occ command within the nextcloud container.  By default this is "www-data".
 	* NEXTCLOUD_CONTAINER - The name given to the nextcloud container.  This is required.
 	* NEXTCLOUD_DATABASE_CONTAINER - The name given to the database container (such as mariadb or mysql).  Can be ommitted - data will still be backed up.
 	* NEXTCLOUD_BACKUP_CRON - Cron-style config for setting when the backup script will be run.  Defaults to midnight daily (0 0 * * *) if ommitted.
@@ -129,13 +130,13 @@ services:
     container_name: nextcloud-cron
     network_mode: none
     depends_on:
-    - nextcloud-app
+      - nextcloud-app
     environment:
-    - NEXTCLOUD_CONTAINER_NAME=nextcloud-app
-    - NEXTCLOUD_CRON_MINUTE_INTERVAL=5
+      - NEXTCLOUD_CONTAINER_NAME=nextcloud-app
+      - NEXTCLOUD_CRON_MINUTE_INTERVAL=5
     volumes:
-    - /var/run/docker.sock:/var/run/docker.sock:ro
-    - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
 
 ######################################### Nextcloud backup container (for periodic physical snapshots of data and database volumes)
@@ -145,18 +146,19 @@ services:
     networks:
       - your.site.pro_network
     depends_on:
-    - nextcloud-app
-    - nextcloud-db
+      - nextcloud-app
+      - nextcloud-db
     environment:
-    - NEXTCLOUD_CONTAINER=nextcloud-app                 # Name of the nextcloud container.
-    - NEXTCLOUD_DATABASE_CONTAINER=nextcloud-db         # Name of the nextcloud database container.
-    - NEXTCLOUD_BACKUP_CRON=0 1 * * *                   # Run daily at 0100hrs.
+      - NEXTCLOUD_EXEC_USER=www-data                      # Name of the user that can execute the occ command in the nextcloud container (www-data by default).
+      - NEXTCLOUD_CONTAINER=nextcloud-app                 # Name of the nextcloud container.
+      - NEXTCLOUD_DATABASE_CONTAINER=nextcloud-db         # Name of the nextcloud database container.
+      - NEXTCLOUD_BACKUP_CRON=0 1 * * *                   # Run daily at 0100hrs.
     volumes:
-    - /var/run/docker.sock:/var/run/docker.sock         # Allows container to access another container.
-    - /etc/localtime:/etc/localtime:ro                  # Use to sync time so that the crond runs as expected.
-    - nextcloud-app:/mnt/nextcloud_app:ro               # Must match the docker-managed nextcloud app volume (/var/www/html).
-    - nextcloud-db:/mnt/nextcloud_db:ro                 # Must match the docker-managed nextcloud database volume (/var/lib/mysql).
-    - ./nextcloud-bu:/backup                            # Convenient location for the backup.
+      - /var/run/docker.sock:/var/run/docker.sock         # Allows container to access another container.
+      - /etc/localtime:/etc/localtime:ro                  # Use to sync time so that the crond runs as expected.
+      - nextcloud-app:/mnt/nextcloud_app:ro               # Must match the docker-managed nextcloud app volume (/var/www/html).
+      - nextcloud-db:/mnt/nextcloud_db:ro                 # Must match the docker-managed nextcloud database volume (/var/lib/mysql).
+      - ./nextcloud-bu:/backup                            # Convenient location for the backup.
     restart: unless-stopped
 
 ######################################### Docker-managed volumes
