@@ -1,4 +1,4 @@
-# Download base image: alpine linux with docker cli.
+# Download base image: alpine linux.
 FROM alpine
 
 # Define the environment variables:
@@ -42,6 +42,10 @@ VOLUME 	/mnt/nextcloud_app \
 # Copy the backup scripts into the container.
 COPY ncbu_scripts/* /
 
+# Define the healthcheck option - script is run every 10 minutes.
+# Running the command "docker ps" will show the ncbu container as "healthy" or "unhealthy".
+# An "unhealthy" status means that either the cron daemon "crond" is not running or the nextcloud app container is down/absent.
+HEALTHCHECK --interval=10m --timeout=1m CMD ["ncbu_healthcheck.sh"]
+
 # Run the initialisation script.
 CMD [ "ncbu_init.sh" ]
-

@@ -202,3 +202,12 @@ $ docker exec nextcloud-bu ncbu_restore.sh
 $ docker-compose down
 $ docker-compose up -d
 ```
+
+## Container Health
+A healthcheck script is executed every ten minutes.  To determine the status/health of a running container, use the command:
+```console
+$ docker ps
+```
+The output will include a "Status" column.  Here the ncbu contaioner should be noted as "healthy" if all is well.  An "unhealthy" status means one of two things:
+1. The cron daemon (crond) is not running; or
+2. The user defined nextcloud app container ($NEXTCLOUD_CONTAINER) is missing/not running.

@@ -3,6 +3,9 @@
 ## This script is the entry point for the ncbu container.
 ## It does some basic error checkings, sets up the cronjob then initiates crond in the foreground.
 
+## Exit codes
+NO_NEXTCLOUD=1
+
 TIMESTAMP () { date +%Y-%m-%d\ %T; }
 
 echo
@@ -15,7 +18,7 @@ echo -e "\tNEXTCLOUD_CONTAINER=${NEXTCLOUD_CONTAINER}"
 echo -e "\tNEXTCLOUD_DATABASE_CONTAINER=${NEXTCLOUD_DATABASE_CONTAINER}"
 if [[ -z "${NEXTCLOUD_CONTAINER}" ]]; then
 	echo -e "$(TIMESTAMP) - NEXTCLOUD_CONTAINER not provied.  Quitting"
-	exit 1
+	exit ${NO_NEXTCLOUD}
 fi
 
 ## Check volumes for the nextcloud and database were provided correctly.
