@@ -116,6 +116,7 @@ services:
       - nginx-proxy
       - nextcloud-db
     environment:
+      - VIRTUAL_PORT=80
       - VIRTUAL_HOST=nextcloud.your.site
       - LETSENCRYPT_HOST=nextcloud.your.site
       - LETSENCRYPT_EMAIL=${NEXTCLOUD_APP_LETSENCRYPT_EMAIL}  
@@ -183,17 +184,17 @@ The process to restore nextcloud and the associated database from backups follow
 1. Set up the staging directory.  This location should contain:
 	* The docker-compose.yml file
 	* The directory containing the backups (./nextcloud-bu in accordance with the example above).
-2. Run docker-compose:
+2. Run up the nextcloud app, database and ncbu containers with docker-compose:
 ```console
 $ docker-compose up -d
 ```
-3. If the restoration is simply to revert to an earlier snapshot then continue to step 4.  If the restoration is to be used with a fresh nextcloud instance (e.g. migration to another host machine) then initialise the nextcloud instance with the same admin username and database configuration settings that were present during the last backup.  In the example above these settings would be:
+3. If the restoration is simply to revert to an earlier snapshot then continue to step 4.  If the restoration is to be used with a fresh nextcloud instance (e.g. migration to another host machine) then initialise the nextcloud instance and database with the same admin username and database configuration settings that were present during the last backup.  In the example above these settings would be:
 	* Configure the database: MySQL/MariaDB
 	* Database user: nextcloud
 	* Database password: <MARIADB_NEXTCLOUD_MYSQL_PASSWORD> (as defined within .env)
 	* Database name: nextcloud
 	* Database host: nextcloud-db
-4. Initiate the ncbu_restore.sh script.  This may take some time.
+4. Initiate the ncbu_restore.sh script.  This may take some time.  If an error occurrs (unable to enter maintenance mode), ensure step three above was carried out correctly.
 ```console
 $ docker exec nextcloud-bu ncbu_restore.sh
 ```
