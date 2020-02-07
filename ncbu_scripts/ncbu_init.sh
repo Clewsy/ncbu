@@ -8,6 +8,9 @@ NO_NEXTCLOUD=1
 
 TIMESTAMP () { date +%Y-%m-%d\ %T; }
 
+## Define environment variable for the group id GID of the nextcloud exec user (likely www-data).
+NEXTCLOUD_EXEC_USER_GID=$(docker exec ${NEXTCLOUD_CONTAINER} id -g ${NEXTCLOUD_EXEC_USER})
+
 echo
 echo -e "$(TIMESTAMP) - Initialising ncbu (nextcloud-backup)..."
 
