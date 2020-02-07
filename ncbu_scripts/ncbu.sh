@@ -25,6 +25,8 @@ else
 	rsync --acls --times --perms --archive --verbose --one-file-system --delete --human-readable --progress /mnt/nextcloud_app/* /backup/nextcloud_app/.
 	echo -e "$(TIMESTAMP) - Finished nextcloud data sync."
        
+	## Define environment variable for the group id GID of the nextcloud exec user (likely www-data).
+	NEXTCLOUD_EXEC_USER_GID=$(docker exec ${NEXTCLOUD_CONTAINER} id -g ${NEXTCLOUD_EXEC_USER})	
 	## Make sure the permissions are set for group read access (www-data by default) at the top level of the data directory.
 	## By default, the official nextcloud container stes the GID of the data directory to root.
 	## The chown command below has no effect on the nextcloud app, but allows copying of the physical backup without being root or in the root group.
