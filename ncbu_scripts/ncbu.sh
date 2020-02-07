@@ -30,7 +30,7 @@ else
 	## Make sure the permissions are set for group read access (www-data by default) at the top level of the data directory.
 	## By default, the official nextcloud container stes the GID of the data directory to root.
 	## The chown command below has no effect on the nextcloud app, but allows copying of the physical backup without being root or in the root group.
-	echo -e "${TIMESTAMP} - Setting permission of nextcloud data directory to :${NEXTCLOUD_EXEC_USER_GID}"
+	echo -e "$(TIMESTAMP) - Setting permission of nextcloud data directory to :${NEXTCLOUD_EXEC_USER_GID}"
         chown -R :${NEXTCLOUD_EXEC_USER_GID} /backup/nextcloud_app/data
 	echo -e "$(TIMESTAMP) - Ensure user on host machine is part of group id GID=${NEXTCLOUD_EXEC_USER_GID} for read access to backup."
 
