@@ -23,11 +23,18 @@ fi
 
 ## Check volumes for the nextcloud and database were provided correctly.
 echo -e "$(TIMESTAMP) - Checking mounted volumes:"
-if [ -n "$(ls -A /mnt/nextcloud_app)" ];        then echo -e "\tNextcloud app volume successfully mounted to /mnt/nextcloud_app"
+if [ -n "$(ls -A /mnt/nextcloud_app)" ];	then echo -e "\tNextcloud app volume successfully mounted to /mnt/nextcloud_app"
 						else echo -e "\tNextcloud app volume missing, empty or not defined."; fi
 
-if [ -n "$(ls -A /mnt/nextcloud_db)" ];         then echo -e "\tNextcloud database volume successfully mounted to /mnt/nextcloud_db"
+if [ -n "$(ls -A /mnt/nextcloud_db)" ];		then echo -e "\tNextcloud database volume successfully mounted to /mnt/nextcloud_db"
 						else echo -e "\tNextcloud database volume missing, empty or not defined."; fi
+
+## Check if backup directories exist.
+echo -e "$(TIMESTAMP) - Checking backup volume:"
+if [ ! -d /backup/nextcloud_app ];	then	echo -e "\tNo data backup exists.  This must be a new Nextcloud and/or ncbu install."
+						echo -e "\tInitialising backup directories."
+						mkdir /backup/nextcloud_app /backup/nextcloud_db
+					else	echo -e "\tBackup exists."; fi
 
 ## Set the crontab to execute the backup script in accordance with the provided timing.
 echo -e "$(TIMESTAMP) - Updating crontab with: \"${NEXTCLOUD_BACKUP_CRON} ncbu.sh\""
