@@ -144,8 +144,7 @@ services:
   nextcloud-bu:
     image: clewsy/ncbu
     container_name: nextcloud-bu
-    networks:
-      - your.site.pro_network
+    network_mode: none
     depends_on:
       - nextcloud-app
       - nextcloud-db
