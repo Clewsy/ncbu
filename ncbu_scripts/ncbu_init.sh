@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 ## This script is the entry point for the ncbu container.
 ## It does some basic error checkings, sets up the cronjob then initiates crond in the foreground.

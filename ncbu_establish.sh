@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 ## An example docker run usage for creating an ncbu container.
 

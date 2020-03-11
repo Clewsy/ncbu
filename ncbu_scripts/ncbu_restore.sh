@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 ## This script must be called manually from witin the ncbu container or externally (e.g. "docker exec <ncbu-container-name> ncbu_restore.sh")
 ## The script will attempt to restore a nextcloud instance (app and database) from a backup that was previously created by the ncbu.sh script.
