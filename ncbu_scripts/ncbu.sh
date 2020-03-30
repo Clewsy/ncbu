@@ -7,10 +7,14 @@
 NO_MAINT=1	## Aborted due to failure to enter maintenance mode.
 SUCCESS=0	## Everything seems to have worked as expected.
 
-TIMESTAMP () { date +%Y-%m-%d\ %T; }
+## Text formatting for stdout.
+BOLD="\033[01;37m"
+RESET="\033[0m"
 
-echo
-echo -e "$(TIMESTAMP) - Running ncbu (nextcloud backup)..."
+## Function to print current date and time (in bold).
+TIMESTAMP () {  echo -ne "${BOLD}$(date +%Y-%m-%d\ %T)${RESET}" ; }
+
+echo -e "\n$(TIMESTAMP) - Running ncbu (nextcloud backup)..."
 
 ## Attempt to put nextcloud into maintenance mode so that all files and the database are locked.
 ## If setting mainenance mode to on fails, print an error then exit. 
@@ -44,7 +48,6 @@ else
 	## Take nextcloud out of maintenance mode so that normal usage can resume.
 	echo -e "$(TIMESTAMP) - Taking ${NEXTCLOUD_CONTAINER} out of maintenance mode..."
 	docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ maintenance:mode --off
-	echo -e "$(TIMESTAMP) - All done."
-	echo
+	echo -e "$(TIMESTAMP) - All done.\n"
 	exit ${SUCCESS}
 fi

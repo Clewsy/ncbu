@@ -9,10 +9,14 @@
 NO_MAINT=1	## Aborted due to failure to enter maintenance mode.
 SUCCESS=0	## Everything seems to have worked as expected.
 
-TIMESTAMP () { date +%Y-%m-%d\ %T; }
+## Text formatting for stdout.
+BOLD="\033[01;37m"
+RESET="\033[0m"
 
-echo
-echo -e "$(TIMESTAMP) - Running ncbu restore..."
+## Function to print current date and time (in bold).
+TIMESTAMP () {  echo -ne "${BOLD}$(date +%Y-%m-%d\ %T)${RESET}" ; }
+
+echo -e "\n$(TIMESTAMP) - Running ncbu restore..."
 
 ## Attempt to put nextcloud into maintenance mode so that all files and the database are locked.
 ## If setting mainenance mode to on fails, print an error then exit. 
@@ -46,8 +50,6 @@ else
 	echo -e "$(TIMESTAMP) - Scanning the ${NEXTCLOUD_CONTAINER} data files and updating the cache accordingly."
 	echo -e "\t(This may take a while but the nextcloud instance should be accessible while the scan runs.)"
 	docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ files:scan --all -v
-
-	echo -e "$(TIMESTAMP) - All done."
-	echo
+	echo -e "$(TIMESTAMP) - All done.\n"
 	exit ${SUCCESS}
 fi

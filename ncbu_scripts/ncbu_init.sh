@@ -6,10 +6,14 @@
 ## Exit codes
 NO_NEXTCLOUD=1
 
-TIMESTAMP () { date +%Y-%m-%d\ %T; }
+## Text formatting for stdout.
+BOLD="\033[01;37m"
+RESET="\033[0m"
 
-echo
-echo -e "$(TIMESTAMP) - Initialising ncbu (nextcloud-backup)..."
+## Function to print current date and time (in bold).
+TIMESTAMP () {  echo -ne "${BOLD}$(date +%Y-%m-%d\ %T)${RESET}" ; }
+
+echo -e "\n$(TIMESTAMP) - Initialising ncbu (nextcloud-backup)..."
 
 ## Check environment variables defining nextcloud app and database were provided.
 ## Nextcloud app container required but the backup can proceed without the database container.
