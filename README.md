@@ -20,7 +20,7 @@ $ docker pull clewsy/ncbu
 The container can be created fom the command line, for example:
 ```bash
 $ docker run \
-	--name ncbu \
+	--name nextcloud-bu \
 	--env NEXTCLOUD_CONTAINER=nextcloud-app \
 	--env NEXTCLOUD_DATABASE_CONTAINER=nextcloud-db \
 	--env NEXTCLOUD_BACKUP_CRON="0 0 * * *" \
@@ -33,28 +33,28 @@ $ docker run \
 	clewsy/ncbu
 ```
 
-However, this backup method is intended to be implemented with a docker-compose.yml file wherein containers are also configured for nextcloud and a database.  The ncbu container can be configured with the following definitions:
+However, this backup method is intended to be implemented with a docker-compose.yml file within which containers are also configured for nextcloud and a database.  The ncbu container can be configured with the following parameters:
 * environment:
-	* NEXTCLOUD_EXEC_USER - The user ID with permission ot access data and run the occ command within the nextcloud container.  By default this is "www-data".
+	* NEXTCLOUD_EXEC_USER - The user ID with permission to access data and run the occ command within the nextcloud container.  By default this is *www-data*.
 	* NEXTCLOUD_CONTAINER - The name given to the nextcloud container.  This is required.
 	* NEXTCLOUD_DATABASE_CONTAINER - The name given to the database container (such as mariadb or mysql).  Can be ommitted - data will still be backed up.
 	* NEXTCLOUD_BACKUP_CRON - Cron-style config for setting when the backup script will be run.  Defaults to midnight daily (0 0 * * *) if ommitted.
 * volumes:
 	* /var/run/docker.sock - Must be bound to the host's equivalent to enable inter-container interaction.
-	* /etc/localtime - Should be bound to the host's equivalent so that the cron job runs when expected.
+	* /etc/localtime - Should be bound to the host's equivalent so that the cron job runs when expected (syncs container date/time to host date/time).
 	* /mnt/nextcloud_app - Must be bound to the same volume as the nextcloud container's data.
 	* /mnt/nextcloud_db - Optional.  To back up the database files, this must be bound to the same volume as the database container's data.
 	* /backup - Should be bound to a convenient user-accessible location.
 
-The following example docker-compose.yml file is configured so that the nextcloud and database (mariadb) containers use docker to manage their volumes.  The ncbu container (nextcloud-bu) will therefore sync both of these volumes to ./nextcloud-bu/nextcloud_app and ./nextcloud-bu/nextcloud_db respectively.  The backup in this example will occur every day at 0100hrs.
+The following example docker-compose.yml file is configured so that the nextcloud and database (mariadb) containers use docker to manage their volumes.  The ncbu container (nextcloud-bu) will therefore sync both of these volumes to `./nextcloud-bu/nextcloud_app` and `./nextcloud-bu/nextcloud_db` respectively.  The backup in this example will occur every day at 0100hrs.
 
 Notes:
 * This example also uses [letsencrypt-nginx-proxy-companion][link_dockerhub_jrcs_letsencrypt] and [nginx-proxy][link_dockerhub_jwilder_nginx-proxy] containers for external https access.
 * The [nextcloud-cronjob][link_dockerhub_rcdailey_nextcloud-cronjob] container is used to periodically run nextcloud's cron.php script.
-* Sensitive details can be entered directly into the *.yml or (as per this example) reference an external .env file (e.g. the password for the nextcloud MariaDB database is defined in .env by a line: MARIADB_NEXTCLOUD_MYSQL_PASSWORD=secure_password )
-* The backups are stored at "./nextcloud-bu/". The intention is for this directory to be regularly synced off-site.
+* Sensitive details can be entered directly into the `docker-compose.yml` file, or (as per this example) reference an external `.env` file (e.g. the password for the nextcloud MariaDB database is defined in `.env` by a line: `MARIADB_NEXTCLOUD_MYSQL_PASSWORD=secure_password`)
+* The backups are stored at `./nextcloud-bu/`. The intention is for this directory to be regularly synced off-site.
 * You may encounter difficulty syncing the database files should you use the official MariaDB docker image.  Issues arise if the UID and GID of the user within the database container do not match a user on the host.  To avoid this, I recommend using the [mariadb docker image][link_dockerhub_linuxserver_mariadb] created by [linuxserver.io][link_web_linuxserver] (as per example below) wherein you can specify the UID and GID.
-* Similarly to the note above, be sure to confirm read access to all the files created by an ncbu backup.  If, for example, the backup is being synced off-site, the user duplicating the backup may not have access by default to read files owned by user www-data.  In this example, adding the user to the www-data group may be sufficient to enable read access.
+* Similarly to the note above, be sure to confirm read access to all the files created by an ncbu backup.  If, for example, the backup is being synced off-site, the user duplicating the backup may not have access by default to read files owned by user *www-data*.  In this example, adding the user to the *www-data* group may be sufficient to enable read access.
 
 ### docker-compose.yml
 ```yml
@@ -190,24 +190,24 @@ The backup script ([ncbu.sh][link_repo_ncbu.sh]) can be run manually from within
 ```bash
 $ docker exec nextcloud-bu ncbu.sh
 ```
-If different, change "nextcloud-bu" to the appropriate container name.
+If different, change *nextcloud-bu* to the appropriate container name.
 
 ## Restore from Backup
 The process to restore nextcloud and the associated database from backups used the restore script ([ncbu_restore.sh][link_repo_ncbu_restore.sh]) as follows:
 1. Set up the staging directory.  This location should contain:
-	* The docker-compose.yml file
-	* The directory containing the backups (./nextcloud-bu in accordance with the example above).
-2. Run up the nextcloud app, database and ncbu containers with docker-compose:
+	* The `docker-compose.yml` file
+	* The directory containing the backups (`./nextcloud-bu` in accordance with the example above).
+2. Using docker-compose, run up the nextcloud app, database and ncbu containers:
 ```bash
 $ docker-compose up -d
 ```
-3. If the restoration is simply to revert to an earlier snapshot then continue to step 4.  If the restoration is to be used with a fresh nextcloud instance (e.g. migration to another host machine) then initialise the nextcloud instance and database with the same admin username and database configuration settings that were present during the last backup.  In the example above these settings would be:
-	* Configure the database: MySQL/MariaDB
-	* Database user: nextcloud
-	* Database password: <MARIADB_NEXTCLOUD_MYSQL_PASSWORD> (as defined within .env)
-	* Database name: nextcloud
-	* Database host: nextcloud-db
-4. Initiate the ncbu_restore.sh script.  This may take some time.  If an error occurrs (unable to enter maintenance mode), ensure step three above was carried out correctly.
+3. If the restoration is simply to revert to an earlier snapshot then continue to step 4.  If the restoration is to be used with a fresh nextcloud instance (e.g. migration to another host machine) then initialise the nextcloud instance and database with the same admin username and database configuration settings that were in use during the last backup.  In the example above these settings would be:
+	* Configure the database: *MySQL/MariaDB*
+	* Database user: *nextcloud*
+	* Database password: *<MARIADB_NEXTCLOUD_MYSQL_PASSWORD>* (as defined within `.env`)
+	* Database name: *nextcloud*
+	* Database host: *nextcloud-db*
+4. Initiate the `ncbu_restore.sh` script.  This may take some time.  If an error occurs (*unable to enter maintenance mode*), ensure step three above was carried out correctly.
 ```bash
 $ docker exec nextcloud-bu ncbu_restore.sh
 ```
@@ -222,9 +222,9 @@ A healthcheck script ([ncbu_healthcheck.sh][link_repo_ncbu_healthcheck.sh]) is e
 ```bash
 $ docker ps
 ```
-The output will include a "Status" column.  Here the ncbu contaioner should be noted as "healthy" if all is well.  An "unhealthy" status means one of two things:
-1. The cron daemon (crond) is not running; or
-2. The user defined nextcloud app container ($NEXTCLOUD_CONTAINER) is missing/not running.
+The output will include a *Status* column.  Here the ncbu contaioner should be noted as *healthy* if all is well.  An *unhealthy* status means one of two things:
+1. The cron daemon (*crond*) is not running; or
+2. The user defined nextcloud app container (`$NEXTCLOUD_CONTAINER`) is missing/not running.
 
 [link_dockerhub_jrcs_letsencrypt]:https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion
 [link_dockerhub_jwilder_nginx-proxy]:https://hub.docker.com/r/jwilder/nginx-proxy
