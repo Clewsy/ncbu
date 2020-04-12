@@ -6,7 +6,7 @@ Once configured, this docker container automates backup of a nextcloud instance 
 
 The following commands will build the container image on the local host (assuming git and docker are installed):
 ```bash
-$ git clone git@gitlab.com:clewsy/ncbu
+$ git clone https://gitlab.com/clewsy/ncbu
 $ cd ncbu
 $ docker build -t clewsy/ncbu .
 ```
