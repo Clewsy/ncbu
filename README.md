@@ -34,8 +34,6 @@ $ docker run \
 ```
 
 However, this backup method is intended to be implemented with a docker-compose.yml file wherein containers are also configured for nextcloud and a database.  The ncbu container can be configured with the following definitions:
-* networks:
-	* a common network should be defined such that the ncbu container can interact with the nextcloud container.
 * environment:
 	* NEXTCLOUD_EXEC_USER - The user ID with permission ot access data and run the occ command within the nextcloud container.  By default this is "www-data".
 	* NEXTCLOUD_CONTAINER - The name given to the nextcloud container.  This is required.
