@@ -17,7 +17,23 @@ $ docker pull clewsy/ncbu
 
 ## Configuration
 
-This backup method is intended to be implemented with a docker-compose.yml file wherein containers are also configured for nextcloud and a database.  The ncbu container can be configured with the following definitions:
+The container can be created fom the command line, for example:
+```bash
+$ docker run \
+	--name ncbu \
+	--env NEXTCLOUD_CONTAINER=nextcloud-app \
+	--env NEXTCLOUD_DATABASE_CONTAINER=nextcloud-db \
+	--env NEXTCLOUD_BACKUP_CRON="0 0 * * *" \
+	--volume /etc/localtime:/etc/localtime:ro \
+	--volume /var/run/docker.sock:/var/run/docker.sock:ro \
+	--volume nextcloud-app:/mnt/nextcloud-app \
+	--volume nextcloud-db:/mnt/nextcloud-db \
+	--volume /home/docker/nextcloud-bu:/backup \
+	--detach \
+	clewsy/ncbu
+```
+
+However, this backup method is intended to be implemented with a docker-compose.yml file wherein containers are also configured for nextcloud and a database.  The ncbu container can be configured with the following definitions:
 * networks:
 	* a common network should be defined such that the ncbu container can interact with the nextcloud container.
 * environment:
@@ -35,11 +51,11 @@ This backup method is intended to be implemented with a docker-compose.yml file 
 The following example docker-compose.yml file is configured so that the nextcloud and database (mariadb) containers use docker to manage their volumes.  The ncbu container (nextcloud-bu) will therefore sync both of these volumes to ./nextcloud-bu/nextcloud_app and ./nextcloud-bu/nextcloud_db respectively.  The backup in this example will occur every day at 0100hrs.
 
 Notes:
-* This example also uses [letsencrypt-nginx-proxy-companion](https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion) and [nginx-proxy](https://hub.docker.com/r/jwilder/nginx-proxy) containers for external https access.
-* The [nextcloud-cronjob](https://hub.docker.com/r/rcdailey/nextcloud-cronjob) container is used to periodically run nextcloud's cron.php script.
+* This example also uses [letsencrypt-nginx-proxy-companion][link_dockerhub_jcrs_letsencrypt] and [nginx-proxy][link_dockerhub_jwilder_nginx-proxy] containers for external https access.
+* The [nextcloud-cronjob][link_dockerhub_rcdailey_nextcloud-cronjob] container is used to periodically run nextcloud's cron.php script.
 * Sensitive details can be entered directly into the *.yml or (as per this example) reference an external .env file (e.g. the password for the nextcloud MariaDB database is defined in .env by a line: MARIADB_NEXTCLOUD_MYSQL_PASSWORD=secure_password )
 * The backups are stored at "./nextcloud-bu/". The intention is for this directory to be regularly synced off-site.
-* You may encounter difficulty syncing the database files should you use the official MariaDB docker image.  Issues arise if the UID and GID of the user within the database container do not match a user on the host.  To avoid this, I recommend using the mariadb docker image created by linuxserver.io (as per example below) wherein you can specify the UID and GID: [linuxserver.io mariadb image at docker hub](https://hub.docker.com/r/linuxserver/mariadb)
+* You may encounter difficulty syncing the database files should you use the official MariaDB docker image.  Issues arise if the UID and GID of the user within the database container do not match a user on the host.  To avoid this, I recommend using the [mariadb docker image][link_dockerhub_linuxserver_mariadb] created by [linuxserver.io][link_web_linuxserver] (as per example below) wherein you can specify the UID and GID.
 * Similarly to the note above, be sure to confirm read access to all the files created by an ncbu backup.  If, for example, the backup is being synced off-site, the user duplicating the backup may not have access by default to read files owned by user www-data.  In this example, adding the user to the www-data group may be sufficient to enable read access.
 
 ### docker-compose.yml
@@ -172,19 +188,19 @@ networks:
 ```
 
 ## Manual Backup
-The backup script (ncbu.sh) can be run manually from within the container.  Alternatively, it can be run at any time with the following docker exec command:
-```console
+The backup script ([ncbu.sh][link_repo_ncbu.sh]) can be run manually from within the container.  Alternatively, it can be run at any time with the following docker exec command:
+```bash
 $ docker exec nextcloud-bu ncbu.sh
 ```
 If different, change "nextcloud-bu" to the appropriate container name.
 
 ## Restore from Backup
-The process to restore nextcloud and the associated database from backups follows:
+The process to restore nextcloud and the associated database from backups used the restore script ([ncbu_restore.sh][link_repo_ncbu_restore.sh]) as follows:
 1. Set up the staging directory.  This location should contain:
 	* The docker-compose.yml file
 	* The directory containing the backups (./nextcloud-bu in accordance with the example above).
 2. Run up the nextcloud app, database and ncbu containers with docker-compose:
-```console
+```bash
 $ docker-compose up -d
 ```
 3. If the restoration is simply to revert to an earlier snapshot then continue to step 4.  If the restoration is to be used with a fresh nextcloud instance (e.g. migration to another host machine) then initialise the nextcloud instance and database with the same admin username and database configuration settings that were present during the last backup.  In the example above these settings would be:
@@ -194,20 +210,29 @@ $ docker-compose up -d
 	* Database name: nextcloud
 	* Database host: nextcloud-db
 4. Initiate the ncbu_restore.sh script.  This may take some time.  If an error occurrs (unable to enter maintenance mode), ensure step three above was carried out correctly.
-```console
+```bash
 $ docker exec nextcloud-bu ncbu_restore.sh
 ```
 5. The restoration should be complete.  If any settings don't seem to be restored, bring the containers down and then restart them:
-```console
+```bash
 $ docker-compose down
 $ docker-compose up -d
 ```
 
 ## Container Health
-A healthcheck script is executed every ten minutes.  To determine the status/health of a running container, use the command:
-```console
+A healthcheck script ([ncbu_healthcheck.sh][link_repo_ncbu_healthcheck.sh]) is executed every ten minutes.  To determine the status/health of a running container, use the command:
+```bash
 $ docker ps
 ```
 The output will include a "Status" column.  Here the ncbu contaioner should be noted as "healthy" if all is well.  An "unhealthy" status means one of two things:
 1. The cron daemon (crond) is not running; or
 2. The user defined nextcloud app container ($NEXTCLOUD_CONTAINER) is missing/not running.
+
+[link_dockerhub_jrcs_letsencrypt]:https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion
+[link_dockerhub_jwilder_nginx-proxy]:https://hub.docker.com/r/jwilder/nginx-proxy
+[link_dockerhub_rcdailey_nextcloud-cronjob]:https://hub.docker.com/r/rcdailey/nextcloud-cronjob
+[link_dockerhub_linuxserver_mariadb]:https://hub.docker.com/r/linuxserver/mariadb
+[link_web_linuxserver]:https://www.linuxserver.io/
+[link_repo_ncbu.sh]:ncbu_scripts/ncbu.sh
+[link_repo_ncbu_restore.sh]:ncbu_scripts/ncbu_restore.sh
+[link_repo_ncbu_healthcheck.sh]:ncbu_scripts/ncbu_healthcheck.sh
