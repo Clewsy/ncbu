@@ -5,13 +5,13 @@ Once configured, this docker container automates backup of a nextcloud instance 
 ## Build the Container Image
 
 The following commands will build the container image on the local host (assuming git and docker are installed):
-```console
+```bash
 $ git clone git@gitlab.com:clewsy/ncbu
 $ cd ncbu
 $ docker build -t clewsy/ncbu .
 ```
 Alternatively the image can be pulled directly from docker hub:
-```console
+```bash
 $ docker pull clewsy/ncbu
 ```
 
@@ -51,7 +51,7 @@ However, this backup method is intended to be implemented with a docker-compose.
 The following example docker-compose.yml file is configured so that the nextcloud and database (mariadb) containers use docker to manage their volumes.  The ncbu container (nextcloud-bu) will therefore sync both of these volumes to ./nextcloud-bu/nextcloud_app and ./nextcloud-bu/nextcloud_db respectively.  The backup in this example will occur every day at 0100hrs.
 
 Notes:
-* This example also uses [letsencrypt-nginx-proxy-companion][link_dockerhub_jcrs_letsencrypt] and [nginx-proxy][link_dockerhub_jwilder_nginx-proxy] containers for external https access.
+* This example also uses [letsencrypt-nginx-proxy-companion][link_dockerhub_jrcs_letsencrypt] and [nginx-proxy][link_dockerhub_jwilder_nginx-proxy] containers for external https access.
 * The [nextcloud-cronjob][link_dockerhub_rcdailey_nextcloud-cronjob] container is used to periodically run nextcloud's cron.php script.
 * Sensitive details can be entered directly into the *.yml or (as per this example) reference an external .env file (e.g. the password for the nextcloud MariaDB database is defined in .env by a line: MARIADB_NEXTCLOUD_MYSQL_PASSWORD=secure_password )
 * The backups are stored at "./nextcloud-bu/". The intention is for this directory to be regularly synced off-site.
