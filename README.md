@@ -105,8 +105,6 @@ services:
     container_name: nextcloud-db
     networks:
       - your.site_network
-    ports:
-      - 3306:3306
     environment:
       - PUID=1000
       - PGID=1000
