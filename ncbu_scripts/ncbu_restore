@@ -30,7 +30,6 @@ else
 	if [[ -n "$(ls -A /backup/nextcloud_app)" ]]; then	## First ensure there is data in the backup.
 		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Nextcloud data restore from ncbu: Syncing /backup/nextcloud_app to ${NEXTCLOUD_CONTAINER} volume...\n" | tee -a ${LOGFILE}
 		rsync --verbose --archive --delete --acls --human-readable --progress --log-file=${LOGFILE} /backup/nextcloud_app/* /mnt/nextcloud_app/.
-#		rsync --acls --times --perms --archive --verbose --one-file-system --delete --human-readable --progress /backup/nextcloud_app/* /mnt/nextcloud_app/.
 		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Finished nextcloud data sync from backup.\n" | tee -a ${LOGFILE}
 	fi
 
@@ -39,7 +38,6 @@ else
 		if [[ -n "$(ls -A /backup/nextcloud_db)" ]]; then	## First ensure there is data in the backup.
 			printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Nextcloud database restore from ncbu physical copy: Syncing /backup/nextcloud_db to ${NEXTCLOUD_DATABASE_CONTAINER} volume...\n" | tee -a ${LOGFILE}
 			rsync --verbose --archive --delete --acls --human-readable --progress --log-file=${LOGFILE} /backup/nextcloud_db/* /mnt/nextcloud_db/.
-#			rsync --acls --times --perms --archive --verbose --one-file-system --delete --human-readable --progress /backup/nextcloud_db/* /mnt/nextcloud_db/.
 			printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Finished nextcloud database sync from backup.\n" | tee -a ${LOGFILE}
 		fi
 	fi
