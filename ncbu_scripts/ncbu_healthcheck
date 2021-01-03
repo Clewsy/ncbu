@@ -7,27 +7,23 @@
 HEALTHY=0
 UNHEALTHY=1
 
-## Text formatting for stdout.
-BOLD="\033[01;37m"
-RESET="\033[0m"
-
 ## Function to print current date and time.
 TIMESTAMP_f () { date +%Y-%m-%d\ %T; }
 
-printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Initiating healthcheck...\n"
+printf "%b" "$(TIMESTAMP_f) - Initiating healthcheck... "
 
 ## Ensure crond is running:
 if ! pgrep crond; then
-    printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Healthcheck failed - crond not running.\n" | tee -a ${LOGFILE}
+    printf "%b" "Healthcheck failed - crond not running.\n"
     exit ${UNHEALTHY};
 fi
 
 ## Ensure the defined nextcloud app container is still present and running:
 if [ $(docker inspect --format '{{.State.Running}}' ${NEXTCLOUD_CONTAINER}) != "true" ]; then
-    printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Healthcheck failed - missing nextcloud container.\n" | tee -a ${LOGFILE}
+    printf "%b" "Healthcheck failed - missing nextcloud container.\n"
     exit ${UNHEALTHY};
 fi
 
 ## Everything seems okay.
-printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Healthcheck passed.\n" | tee -a ${LOGFILE}
+printf "%b" "Healthcheck passed.\n"
 exit ${HEALTHY}
