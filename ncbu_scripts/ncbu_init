@@ -1,0 +1,71 @@
+#!/bin/bash
+
+## This script is the entry point for the ncbu container.
+## It does some basic error checkings, sets up the cronjob then initiates crond in the foreground.
+
+## Exit codes
+NO_NEXTCLOUD=1
+
+## Text formatting for stdout.
+BOLD="\033[01;37m"
+RESET="\033[0m"
+
+## Define logrotate content for ncbu logfile.
+LOGROTATE_FILE="/etc/logrotate.d/$(basename ${LOGFILE})"
+LOGROTATE_FILE_CONTENT="\
+${LOGFILE} {
+	su root root
+	weekly
+	rotate 12
+	compress
+	delaycompress
+	missingok
+	notifempty
+	create 644 root
+}\n"
+
+## Create symbolic links for backwards compatibility.
+ln -s /ncbu /ncbu.sh
+ln -s /ncbu_restore /ncbu_restore.sh
+
+## Function to print current date and time.
+TIMESTAMP_f () { date +%Y-%m-%d\ %T; }
+
+printf "%b" "\n${BOLD}$(TIMESTAMP_f)${RESET} - Initialising ncbu (nextcloud-backup)...\n" | tee -a ${LOGFILE}
+
+## Check environment variables defining nextcloud app and database were provided.
+## Nextcloud app container required but the backup can proceed without the database container.
+printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Checking environment variables provided:\n" | tee -a ${LOGFILE}
+printf "%b" "\tNEXTCLOUD_CONTAINER=${NEXTCLOUD_CONTAINER}\n" | tee -a ${LOGFILE}
+printf "%b" "\tNEXTCLOUD_DATABASE_CONTAINER=${NEXTCLOUD_DATABASE_CONTAINER}\n" | tee -a ${LOGFILE}
+if [[ -z "${NEXTCLOUD_CONTAINER}" ]]; then
+	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - NEXTCLOUD_CONTAINER not provied.  Quitting.\n" | tee -a ${LOGFILE}
+	exit ${NO_NEXTCLOUD}
+fi
+
+## Check volumes for the nextcloud and database were provided correctly.
+printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Checking mounted volumes:\n" | tee -a ${LOGFILE}
+if [ -n "$(ls -A /mnt/nextcloud_app)" ];	then printf "%b" "\tNextcloud app volume successfully mounted to /mnt/nextcloud_app\n" | tee -a ${LOGFILE}
+											else printf "%b" "\tNextcloud app volume missing, empty or not defined.\n" | tee -a ${LOGFILE}; fi
+
+if [ -n "$(ls -A /mnt/nextcloud_db)" ];		then printf "%b" "\tNextcloud database volume successfully mounted to /mnt/nextcloud_db\n" | tee -a ${LOGFILE}
+											else printf "%b" "\tNextcloud database volume missing, empty or not defined.\n" | tee -a ${LOGFILE}; fi
+
+## Check if backup directories exist.
+printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Checking backup volume:\n"
+if [ ! -d /backup/nextcloud_app ];	then	printf "%b" "\tNo data backup exists.  This must be a new Nextcloud and/or ncbu install.\n" | tee -a ${LOGFILE}
+											printf "%b" "\tInitialising backup directories.\n" | tee -a ${LOGFILE}
+											mkdir /backup/nextcloud_app /backup/nextcloud_db
+									else	printf "%b" "\tBackup exists.\n" | tee -a ${LOGFILE}; fi
+
+## Set the crontab to execute the backup script in accordance with the provided timing.
+printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Updating crontab with: \"${NEXTCLOUD_BACKUP_CRON} ncbu\"\n" | tee -a ${LOGFILE}
+printf "%b" "${NEXTCLOUD_BACKUP_CRON} /ncbu\n" > /var/spool/cron/crontabs/root | tee -a ${LOGFILE}
+
+## Configure log rotation for the ncbu logfile.
+printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Configuring logrotate for ${LOGFILE}...\n" | tee -a ${LOGFILE}
+printf "%b" "${LOGROTATE_FILE_CONTENT}" > ${LOGROTATE_FILE}
+
+## Run crond (i.e. all set, just waiting for the specified time to trigger the backup script.)
+printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Running crond in the foreground...\n\n" | tee -a ${LOGFILE}
+crond -f
