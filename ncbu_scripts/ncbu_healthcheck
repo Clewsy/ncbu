@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## This script is run periodically to determine if the container is "healthy".
-## To return HEALTHY (0), crond must be running and the defined $NEXTCLOUD_CONTAINER must be accessible and running.
+## To return HEALTHY (0), crond must be running and the defined ${NEXTCLOUD_CONTAINER} must be accessible and running.
 
 ## Exit codes
 HEALTHY=0
@@ -16,18 +16,18 @@ TIMESTAMP_f () { date +%Y-%m-%d\ %T; }
 
 printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Initiating healthcheck...\n"
 
-# Ensure crond is running:
+## Ensure crond is running:
 if ! pgrep crond; then
     printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Healthcheck failed - crond not running.\n" | tee -a ${LOGFILE}
     exit ${UNHEALTHY};
 fi
 
-# Ensure the defined nextcloud app container is still present and running:
+## Ensure the defined nextcloud app container is still present and running:
 if [ $(docker inspect --format '{{.State.Running}}' ${NEXTCLOUD_CONTAINER}) != "true" ]; then
     printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Healthcheck failed - missing nextcloud container.\n" | tee -a ${LOGFILE}
     exit ${UNHEALTHY};
 fi
 
-# Everything seems okay.
+## Everything seems okay.
 printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Healthcheck passed.\n" | tee -a ${LOGFILE}
 exit ${HEALTHY}
