@@ -13,7 +13,7 @@ TIMESTAMP_f () { date +%Y-%m-%d\ %T; }
 printf "%b" "$(TIMESTAMP_f) - Initiating healthcheck... "
 
 ## Ensure crond is running:
-if ! pgrep crond; then
+if ! pgrep crond > /dev/null; then
     printf "%b" "Healthcheck failed - crond not running.\n"
     exit ${UNHEALTHY};
 fi
