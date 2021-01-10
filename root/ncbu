@@ -3,16 +3,8 @@
 ## This is the backup script that is called as a cron job.
 ## It will put nextcloud into maintenance mode then create physical snapshot backups of the nextcloud app and nextcloud database volumes. 
 
-## Exit codes:
-NO_MAINT=1	## Aborted due to failure to enter maintenance mode.
-SUCCESS=0	## Everything seems to have worked as expected.
-
-## Text formatting for stdout.
-BOLD="\033[01;37m"
-RESET="\033[0m"
-
-## Function to print current date and time.
-TIMESTAMP_f () { date +%Y-%m-%d\ %T; }
+## Import common variables and functions.
+source /.ncbu_config
 
 printf "%b" "\n${BOLD}$(TIMESTAMP_f)${RESET} - Running ncbu (nextcloud backup)...\n" | tee -a ${LOGFILE}
 
@@ -26,14 +18,14 @@ if ! docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ mainte
 else
 	## Sync the nextcloud app volume to the nextcloud-bu volume.
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Nextcloud data backup: Syncing ${NEXTCLOUD_CONTAINER} volume to /backup...\n" | tee -a ${LOGFILE}
-	rsync --verbose --archive --delete --acls --human-readable --progress --log-file=${LOGFILE} /mnt/nextcloud_app/* /backup/nextcloud_app/.
+	rsync ${RSYNC_OPTIONS} /mnt/nextcloud_app/* /backup/nextcloud_app/.
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Finished nextcloud data sync.\n" | tee -a ${LOGFILE}
 
 	## Define environment variable for the group id GID of the nextcloud exec user (likely www-data).
 	NEXTCLOUD_EXEC_USER_GID=$(docker exec ${NEXTCLOUD_CONTAINER} id -g ${NEXTCLOUD_EXEC_USER})
 	## Make sure the permissions are set for group read access (www-data by default) at the top level of the data directory.
 	## By default, the official nextcloud container stes the GID of the data directory to root.
-	## The chown command below has no effect on the nextcloud app, but allows copying of the physical backup without being root or in the root group.
+	## The chown command below has no effect on the nextcloud app, but allows copying of the physical backup without being root.
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Setting permission of nextcloud data directory to :${NEXTCLOUD_EXEC_USER_GID}\n" | tee -a ${LOGFILE}
 	chown -R :${NEXTCLOUD_EXEC_USER_GID} /backup/nextcloud_app/data
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Ensure user on host machine is part of group id GID=${NEXTCLOUD_EXEC_USER_GID} for read access to backup.\n" | tee -a ${LOGFILE}
@@ -41,9 +33,8 @@ else
 	## If a database container was defined, sync the database volume to the nextcloud-bu volume.
 	if [[ -n "${NEXTCLOUD_DATABASE_CONTAINER}" ]]; then
 		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Nextcloud database backup (physical copy): Syncing ${NEXTCLOUD_DATABASE_CONTAINER} volume to /backup...\n" | tee -a ${LOGFILE}
-		rsync --verbose --archive --delete --acls --human-readable --progress --log-file=${LOGFILE} /mnt/nextcloud_db/* /backup/nextcloud_db/.
-		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Finished nextcloud database sync.\n" | tee -a ${LOGFILE}
-	fi
+		rsync ${RSYNC_OPTIONS} /mnt/nextcloud_db/* /backup/nextcloud_db/.
+		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Finished nextcloud database sync.\n" | tee -a ${LOGFILE}; fi
 
 	## Take nextcloud out of maintenance mode so that normal usage can resume.
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Taking ${NEXTCLOUD_CONTAINER} out of maintenance mode...\n" | tee -a ${LOGFILE}

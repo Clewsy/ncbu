@@ -5,16 +5,8 @@
 ## If restoration is required for migration to a new host, ensure a new nextcloud instance is initialised with the same admin user and database
 ## configurations that were in place during the last backup. 
 
-## Exit codes:
-NO_MAINT=1	## Aborted due to failure to enter maintenance mode.
-SUCCESS=0	## Everything seems to have worked as expected.
-
-## Text formatting for stdout.
-BOLD="\033[01;37m"
-RESET="\033[0m"
-
-## Function to print current date and time.
-TIMESTAMP_f () { date +%Y-%m-%d\ %T; }
+## Import common variables and functions.
+source /.ncbu_config
 
 printf "%b" "\n${BOLD}$(TIMESTAMP_f)${RESET} - Running ncbu restore...\n" | tee -a ${LOGFILE}
 
@@ -27,20 +19,16 @@ if ! docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ mainte
 	exit ${NO_MAINT}
 else
 	## Sync the ncbu nextcloud data backup to the nextcloud app volume.
-	if [[ -n "$(ls -A /backup/nextcloud_app)" ]]; then	## First ensure there is data in the backup.
+	if [ -n "$(ls -A /backup/nextcloud_app)" ]; then	## First ensure there is data in the backup.
 		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Nextcloud data restore from ncbu: Syncing /backup/nextcloud_app to ${NEXTCLOUD_CONTAINER} volume...\n" | tee -a ${LOGFILE}
-		rsync --verbose --archive --delete --acls --human-readable --progress --log-file=${LOGFILE} /backup/nextcloud_app/* /mnt/nextcloud_app/.
-		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Finished nextcloud data sync from backup.\n" | tee -a ${LOGFILE}
-	fi
+		rsync ${RSYNC_OPTIONS} /backup/nextcloud_app/* /mnt/nextcloud_app/.
+		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Finished nextcloud data sync from backup.\n" | tee -a ${LOGFILE}; fi
 
-	## If a database container was defined, sync the ncbu nextcloud database backup to the nextcloud database volume.
-	if [[ -n "${NEXTCLOUD_DATABASE_CONTAINER}" ]]; then
-		if [[ -n "$(ls -A /backup/nextcloud_db)" ]]; then	## First ensure there is data in the backup.
-			printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Nextcloud database restore from ncbu physical copy: Syncing /backup/nextcloud_db to ${NEXTCLOUD_DATABASE_CONTAINER} volume...\n" | tee -a ${LOGFILE}
-			rsync --verbose --archive --delete --acls --human-readable --progress --log-file=${LOGFILE} /backup/nextcloud_db/* /mnt/nextcloud_db/.
-			printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Finished nextcloud database sync from backup.\n" | tee -a ${LOGFILE}
-		fi
-	fi
+	## If a database container was defined and data exists, sync the ncbu database backup to the nextcloud database volume.
+	if [ -n "${NEXTCLOUD_DATABASE_CONTAINER}" ] && [ -n "$(ls -A /backup/nextcloud_db)"]; then
+		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Nextcloud database restore from ncbu physical copy: Syncing /backup/nextcloud_db to ${NEXTCLOUD_DATABASE_CONTAINER} volume...\n" | tee -a ${LOGFILE}
+		rsync ${RSYNC_OPTIONS} /backup/nextcloud_db/* /mnt/nextcloud_db/.
+		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Finished nextcloud database sync from backup.\n" | tee -a ${LOGFILE}; fi
 
 	## Take nextcloud out of maintenance mode so that normal usage can resume.
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Taking ${NEXTCLOUD_CONTAINER} out of maintenance mode...\n" | tee -a ${LOGFILE}

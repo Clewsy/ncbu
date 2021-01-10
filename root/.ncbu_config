@@ -1,0 +1,31 @@
+#!/bin/bash
+
+## Exit codes
+SUCCESS=0	## Everything seems to have worked as expected.
+NO_NEXTCLOUD=1  ## Nextcloud app container not defined.
+NO_MAINT=2	## Aborted due to failure to enter maintenance mode.
+
+## Text formatting for stdout.
+BOLD="\033[01;37m"
+RESET="\033[0m"
+
+## Configure logging.
+LOGFILE="/backup/ncbu.log"
+LOGROTATE_FILE="/etc/logrotate.d/ncbu"
+LOGROTATE_FILE_CONTENT="\
+${LOGFILE} {
+	su root root
+        size 100k
+	rotate 10
+	compress
+	delaycompress
+	missingok
+	notifempty
+	create 644 root
+}\n"
+
+## Set the options for use with rsync.
+RSYNC_OPTIONS="--verbose --archive --delete --acls --human-readable --progress --log-file=${LOGFILE}"
+
+## Function to print current date and time.
+TIMESTAMP_f () { date +%Y-%m-%d\ %T; }

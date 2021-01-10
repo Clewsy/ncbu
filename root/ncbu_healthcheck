@@ -3,12 +3,12 @@
 ## This script is run periodically to determine if the container is "healthy".
 ## To return HEALTHY (0), crond must be running and the defined ${NEXTCLOUD_CONTAINER} must be accessible and running.
 
+## Import common variables and functions.
+source /.ncbu_config
+
 ## Exit codes
 HEALTHY=0
 UNHEALTHY=1
-
-## Function to print current date and time.
-TIMESTAMP_f () { date +%Y-%m-%d\ %T; }
 
 printf "%b" "$(TIMESTAMP_f) - Initiating healthcheck... "
 
