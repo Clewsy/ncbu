@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ## This is the backup script that is called as a cron job.
-## It will put nextcloud into maintenance mode then create physical snapshot backups of the nextcloud app and nextcloud database volumes. 
+## It will put nextcloud into maintenance mode then create physical snapshot backups of the nextcloud app and database volumes. 
 
 ## Import common variables and functions.
-source /.ncbu_config
+source /.ncbu_lib
 
 printf "%b" "\n${BOLD}$(TIMESTAMP_f)${RESET} - Running ncbu (nextcloud backup)...\n" | tee -a ${LOGFILE}
 
@@ -41,4 +41,9 @@ else
 	docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ maintenance:mode --off
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - All done.\n\n" | tee -a ${LOGFILE}
 	exit ${SUCCESS}
+
+	## Rotate the logfile if needed,
+	logrotate ${LOGROTATE_FILE}
 fi
+
+exit ${SUCCESS}

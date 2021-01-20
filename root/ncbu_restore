@@ -1,12 +1,12 @@
 #!/bin/bash
 
-## This script must be called manually from witin the ncbu container or externally (e.g. "docker exec <ncbu-container-name> ncbu_restore")
-## The script will attempt to restore a nextcloud instance (app and database) from a backup that was previously created by the ncbu script.
-## If restoration is required for migration to a new host, ensure a new nextcloud instance is initialised with the same admin user and database
-## configurations that were in place during the last backup. 
+## This script must be called manually, either from witin the ncbu container (/ncbu_restore) or externally with the command
+## "("docker exec <ncbu-container> ncbu_restore".  The script will attempt to restore a nextcloud instance (app and database) from a
+## backup that was previously created by the ncbu script.  If restoration is required for migration to a new host, ensure a new
+## nextcloud instance is initialised with the same admin user and database configurations that were in place during the last backup. 
 
 ## Import common variables and functions.
-source /.ncbu_config
+source /.ncbu_lib
 
 printf "%b" "\n${BOLD}$(TIMESTAMP_f)${RESET} - Running ncbu restore...\n" | tee -a ${LOGFILE}
 
@@ -39,5 +39,9 @@ else
 	printf "%b" "\t(This may take a while but the nextcloud instance should be accessible while the scan runs.)\n" | tee -a ${LOGFILE}
 	docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ files:scan --all -v
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - All done.\n\n" | tee -a ${LOGFILE}
+
+	## Rotate the logfile if needed,
+	logrotate ${LOGROTATE_FILE}
+
 	exit ${SUCCESS}
 fi

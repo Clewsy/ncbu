@@ -4,7 +4,7 @@
 ## It does some basic error checkings, sets up the cronjob then initiates crond in the foreground.
 
 ## Import common variables and functions.
-source /.ncbu_config
+source /.ncbu_lib
 
 ## Create symbolic links for backwards compatibility.
 ln -s /ncbu /ncbu.sh

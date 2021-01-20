@@ -4,7 +4,7 @@
 ## To return HEALTHY (0), crond must be running and the defined ${NEXTCLOUD_CONTAINER} must be accessible and running.
 
 ## Import common variables and functions.
-source /.ncbu_config
+source /.ncbu_lib
 
 ## Exit codes
 HEALTHY=0

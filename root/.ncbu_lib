@@ -15,7 +15,7 @@ LOGROTATE_FILE="/etc/logrotate.d/ncbu"
 LOGROTATE_FILE_CONTENT="\
 ${LOGFILE} {
 	su root root
-        size 100k
+	size 1M
 	rotate 10
 	compress
 	delaycompress
