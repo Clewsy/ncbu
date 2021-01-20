@@ -12,7 +12,7 @@ printf "%b" "\n${BOLD}$(TIMESTAMP_f)${RESET} - Running ncbu (nextcloud backup)..
 ## If setting mainenance mode to on fails, print an error then exit.
 printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Putting ${NEXTCLOUD_CONTAINER} into maintenance mode...\n" | tee -a ${LOGFILE}
 if ! docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ maintenance:mode --on; then
-	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - unable to enter maintenance mode.  Has the nextcloud app and database been initialised and connected?\n" | tee -a ${LOGFILE}
+	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Unable to enter maintenance mode.  Has the nextcloud app and database been initialised and connected?\n" | tee -a ${LOGFILE}
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Aborting backup.\n" | tee -a ${LOGFILE}
 	exit ${NO_MAINT}
 else
@@ -40,10 +40,9 @@ else
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Taking ${NEXTCLOUD_CONTAINER} out of maintenance mode...\n" | tee -a ${LOGFILE}
 	docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ maintenance:mode --off
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - All done.\n\n" | tee -a ${LOGFILE}
-	exit ${SUCCESS}
 
 	## Rotate the logfile if needed,
 	logrotate ${LOGROTATE_FILE}
-fi
 
-exit ${SUCCESS}
+	exit ${SUCCESS}
+fi
