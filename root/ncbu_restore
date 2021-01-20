@@ -38,10 +38,12 @@ else
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Scanning the ${NEXTCLOUD_CONTAINER} data files and updating the cache accordingly.\n" | tee -a ${LOGFILE}
 	printf "%b" "\t(This may take a while but the nextcloud instance should be accessible while the scan runs.)\n" | tee -a ${LOGFILE}
 	docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ files:scan --all -v
-	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - All done.\n\n" | tee -a ${LOGFILE}
 
-	## Rotate the logfile if needed,
+	## Rotate the logfile if needed.
+	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Rotating logfile if required....n" | tee -a ${LOGFILE}
 	logrotate ${LOGROTATE_FILE}
+
+	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - All done.\n\n" | tee -a ${LOGFILE}
 
 	exit ${SUCCESS}
 fi

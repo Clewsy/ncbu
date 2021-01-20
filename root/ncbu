@@ -39,10 +39,12 @@ else
 	## Take nextcloud out of maintenance mode so that normal usage can resume.
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Taking ${NEXTCLOUD_CONTAINER} out of maintenance mode...\n" | tee -a ${LOGFILE}
 	docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ maintenance:mode --off
-	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - All done.\n\n" | tee -a ${LOGFILE}
 
-	## Rotate the logfile if needed,
+	## Rotate the logfile if needed.
+	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Rotating logfile if required....n" | tee -a ${LOGFILE}
 	logrotate ${LOGROTATE_FILE}
+
+	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - All done.\n\n" | tee -a ${LOGFILE}
 
 	exit ${SUCCESS}
 fi
