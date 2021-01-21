@@ -41,7 +41,7 @@ else
 	docker exec -u ${NEXTCLOUD_EXEC_USER} ${NEXTCLOUD_CONTAINER} php occ maintenance:mode --off
 
 	## Rotate the logfile if needed.
-	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Rotating logfile if required....n" | tee -a ${LOGFILE}
+	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Rotating logfile if required...\n" | tee -a ${LOGFILE}
 	logrotate ${LOGROTATE_FILE}
 
 	printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - All done.\n\n" | tee -a ${LOGFILE}
