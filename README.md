@@ -96,6 +96,7 @@ services:
       - ./nginx-proxy/certs:/etc/nginx/certs:rw
       - ./nginx-proxy/vhost.d:/etc/nginx/vhost.d:rw
       - ./nginx-proxy/html:/usr/share/nginx/html:rw
+      - ./nginx-proxy/acme.sh:/etc/acme.sh
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
