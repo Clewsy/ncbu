@@ -55,7 +55,7 @@ Notes:
 * The backups are stored at **./nextcloud-bu/**. The intention is for this directory to be regularly synced off-site.
 * You may encounter difficulty syncing the database files should you use the official MariaDB docker image.  Issues arise if the UID and GID of the user within the database container do not match the host user.  To avoid this, I recommend using the [mariadb docker image][link_dockerhub_linuxserver_mariadb] created by [linuxserver.io][link_web_linuxserver] (as per example below) wherein you can specify the UID and GID.
 * Similarly to the note above, be sure to confirm read access to all the files created by an ncbu backup.  If, for example, the backup is being synced off-site, the user duplicating the backup may not have read access by default for files owned by user **www-data**.  In this example, adding the user to the **www-data** group may be sufficient to enable read access.
-* Syncs can be confirmed and issues can be debugged by viewing the ncbu.log logfile.  This will be located in the directory to which **/backup** is bound.  In the example below the log file can be viewed from the host system with the command `$ cat ./nextcloud-bu/ncbu.log`.
+* Syncs can be confirmed and issues can be debugged by viewing the ncbu.log logfile.  This will be located in the directory to which **/backup** is bound.  In the example below the log file can be viewed from the host system with the command: `$ cat ./nextcloud-bu/ncbu.log`.
 
 ### docker-compose.yml
 ```yml
@@ -225,6 +225,49 @@ $ docker ps
 The output will include a **Status** column.  Here the ncbu contaioner should be noted as **healthy** if all is well.  An **unhealthy** status means one of two things:
 1. The cron daemon (**crond**) is not running; or
 2. The user defined nextcloud app container (**$NEXTCLOUD_CONTAINER**) is missing/not running.
+
+
+## Logging
+Output of the various scripts is logged to a file within the container's **/backup** directory.  The logfile will also include the verbose output from the rsync commands.
+
+In the example yml file above, since the container's **/backup** directory is mapped to **./nextcloud-bu**, this is where the logfile can be read on the host machine.
+
+The *ncbu* and *ncbu_restore* scripts also trigger the logrotate command.  The logfile will be rotated and archived if the file size exceeds 1M.  In this scenario the logfile can be viewed from the host machine by simply using the `cat` command.  Example logs shown below:
+```bash
+$ cat /home/docker/nextcloud-bu/ncbu.log
+
+2021-06-18 00:00:00 - Running ncbu (nextcloud backup)...
+2021-06-18 00:00:00 - Putting nextcloud-app into maintenance mode...
+2021-06-18 00:00:00 - Nextcloud data backup: Syncing nextcloud-app volume to /backup...
+2021/06/18 00:00:00 [35874] building file list
+2021/06/18 00:00:01 [35874] >f..t...... config/config.php
+2021/06/18 00:00:02 [35874] >f.st...... data/nextcloud.log
+2021/06/18 00:00:02 [35874] >f.st...... data/appdata_oc037zsrujze/appstore/apps.json
+2021/06/18 00:00:02 [35874] .d..t...... data/appdata_oc037zsrujze/preview/0/6/c/d/4/1/6/     
+
+...
+
+2021/06/18 00:00:06 [35874] sent 67.01M bytes  received 44.01K bytes  10.32M bytes/sec
+2021/06/18 00:00:06 [35874] total size is 34.27G  speedup is 511.07
+2021-06-18 00:00:06 - Finished nextcloud data sync.
+2021-06-18 00:00:06 - Setting permission of nextcloud data directory to :33
+2021-06-18 00:00:07 - Ensure user on host machine is part of group id GID=33 for read access to backup.
+2021-06-18 00:00:07 - Nextcloud database backup (physical copy): Syncing nextcloud-db volume to /backup...
+2021/06/18 00:00:07 [35901] building file list
+2021/06/18 00:00:07 [35901] >f..t...... databases/ib_logfile0
+2021/06/18 00:00:08 [35901] >f..t...... databases/ib_logfile1   
+
+...
+
+2021/06/18 00:00:10 [35901] >f.st...... log/mysql/mariadb-bin.index
+2021/06/18 00:00:10 [35901] sent 386.56M bytes  received 436 bytes  110.45M bytes/sec
+2021/06/18 00:00:10 [35901] total size is 878.59M  speedup is 2.27
+2021-06-18 00:00:10 - Finished nextcloud database sync.
+2021-06-18 00:00:10 - Taking nextcloud-app out of maintenance mode...
+2021-06-18 00:00:10 - Rotating logfile if required...
+2021-06-18 00:00:10 - All done. 
+```
+
 
 [link_dockerhub_jrcs_letsencrypt]:https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion
 [link_dockerhub_jwilder_nginx-proxy]:https://hub.docker.com/r/jwilder/nginx-proxy
