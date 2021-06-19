@@ -49,7 +49,7 @@ However, this backup method is intended to be implemented with a **docker-compos
 The following example **docker-compose.yml** file is configured in such a way that the nextcloud and database (mariadb) containers use docker to manage their volumes.  The ncbu container (**nextcloud-bu**) will therefore sync both of these Docker-managed volumes to **./nextcloud-bu/nextcloud_app** and **./nextcloud-bu/nextcloud_db** respectively.  The backup in this example will occur every day at 0100hrs.
 
 Notes:
-* This example also uses [letsencrypt-nginx-proxy-companion][link_dockerhub_jrcs_letsencrypt] and [nginx-proxy][link_dockerhub_jwilder_nginx-proxy] containers for external https access.
+* This example also uses [nginx-proxy][link_dockerhub_nginx_proxy] and [acme-companion][link_dockerhub_nginx_proxy_acme_companion] containers for external https access.
 * The [nextcloud-cronjob][link_dockerhub_rcdailey_nextcloud-cronjob] container is used to periodically run nextcloud's cron.php script.
 * Sensitive details/credentials can be entered directly into the **docker-compose.yml** file, or (as per this example) reference an external **.env** file.  For example, the password for the nextcloud MariaDB database is defined in **.env** by a line: **MARIADB_NEXTCLOUD_MYSQL_PASSWORD=secure_password**.
 * The backups are stored at **./nextcloud-bu/**. The intention is for this directory to be regularly synced off-site.
@@ -63,42 +63,42 @@ version: '3'
 
 services:
 
-######################################### Nginx Proxy container
+######################################### Nginx-proxy container
   nginx-proxy:
-    image: jwilder/nginx-proxy:alpine
+    image: nginxproxy/nginx-proxy:alpine
     container_name: nginx-proxy
     networks:
       - your.site_network
-    labels:
-      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy=true"
     ports:
       - 80:80
       - 443:443
     volumes:
       - ./nginx-proxy/conf.d:/etc/nginx/conf.d:rw
-      - ./nginx-proxy/vhost.d:/etc/nginx/vhost.d:rw
-      - ./nginx-proxy/html:/usr/share/nginx/html:rw
+      - ./nginx-proxy/vhost.d:/etc/nginx/vhost.d
+      - ./nginx-proxy/html:/usr/share/nginx/html
+      - ./nginx-proxy/dhparam:/etc/nginx/dhparam
       - ./nginx-proxy/certs:/etc/nginx/certs:ro
-      - ./nginx-proxy/your.site_custom_proxy_settings.conf:/etc/nginx/conf.d/my_custom_proxy_settings.conf      #added to enable nc uploads>1MB (client_max_body_size 500m)
-      - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
 
-######################################### Let's Encrypt container
-  letsencrypt:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    container_name: letsencrypt
+######################################### Nginx-proxy-acme-companion container
+  nginx-proxy-acme:
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
     networks:
       - your.site_network
     depends_on:
       - nginx-proxy
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx-proxy
     volumes:
-      - ./nginx-proxy/certs:/etc/nginx/certs:rw
-      - ./nginx-proxy/vhost.d:/etc/nginx/vhost.d:rw
-      - ./nginx-proxy/html:/usr/share/nginx/html:rw
+      - ./nginx-proxy/vhost.d:/etc/nginx/vhost.d
+      - ./nginx-proxy/html:/usr/share/nginx/html
+      - ./nginx-proxy/certs:/etc/nginx/certs
       - ./nginx-proxy/acme.sh:/etc/acme.sh
-      - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
 
 ######################################### MariaDB database (for nextcloud) container
@@ -121,25 +121,25 @@ services:
 
 ######################################### Nextcloud web app container
   nextcloud-app:
-    image: nextcloud:latest
+    image: nextcloud
     container_name: nextcloud-app
     networks:
       - your.site_network
     depends_on:
-      - letsencrypt
       - nginx-proxy
+      - nginx-proxy-acme
       - nextcloud-db
     environment:
       - VIRTUAL_PORT=80
-      - VIRTUAL_HOST=nextcloud.your.site
-      - LETSENCRYPT_HOST=nextcloud.your.site
-      - LETSENCRYPT_EMAIL=${NEXTCLOUD_APP_LETSENCRYPT_EMAIL}  
+      - VIRTUAL_HOST=${NEXTCLOUD_APP_URL}
+      - LETSENCRYPT_HOST=${NEXTCLOUD_APP_URL}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     volumes:
       - nextcloud-app:/var/www/html
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
 
-######################################### Nextcloud cron container (for periodically running cron.php)
+######################################### Nextcloud cronjob container (for periodically running cron.php)
   nextcloud-cron:
     image: rcdailey/nextcloud-cronjob
     container_name: nextcloud-cron
@@ -154,7 +154,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
 
-######################################### Nextcloud backup container (for periodic physical snapshots of data and database volumes)
+######################################### Nextcloud backup container (for periodically copying data and database)
   nextcloud-bu:
     image: clewsy/ncbu
     container_name: nextcloud-bu
@@ -166,12 +166,12 @@ services:
       - NEXTCLOUD_EXEC_USER=www-data                      # Name of the user that can execute the occ command in the nextcloud container (www-data by default).
       - NEXTCLOUD_CONTAINER=nextcloud-app                 # Name of the nextcloud container.
       - NEXTCLOUD_DATABASE_CONTAINER=nextcloud-db         # Name of the nextcloud database container.
-      - NEXTCLOUD_BACKUP_CRON=0 1 * * *                   # Run daily at 0100hrs.
+      - NEXTCLOUD_BACKUP_CRON=0 0 * * *                   # Run at midnight.
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock         # Allows container to access another container.
       - /etc/localtime:/etc/localtime:ro                  # Use to sync time so that the crond runs as expected.
-      - nextcloud-app:/mnt/nextcloud_app:ro               # Must match the docker-managed nextcloud app volume (/var/www/html).
-      - nextcloud-db:/mnt/nextcloud_db:ro                 # Must match the docker-managed nextcloud database volume (/var/lib/mysql).
+      - nextcloud-app:/mnt/nextcloud_app                  # Must match the docker-managed nextcloud app volume (/var/www/html).
+      - nextcloud-db:/mnt/nextcloud_db                    # Must match the docker-managed nextcloud database volume (/var/lib/mysql).
       - ./nextcloud-bu:/backup                            # Convenient location for the backup.
     restart: unless-stopped
 
@@ -269,9 +269,9 @@ $ cat /home/docker/nextcloud-bu/ncbu.log
 ```
 
 
-[link_dockerhub_jrcs_letsencrypt]:https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion
-[link_dockerhub_jwilder_nginx-proxy]:https://hub.docker.com/r/jwilder/nginx-proxy
 [link_dockerhub_linuxserver_mariadb]:https://hub.docker.com/r/linuxserver/mariadb
+[link_dockerhub_nginx_proxy]:https://hub.docker.com/r/nginxproxy/nginx-proxy
+[link_dockerhub_nginx_proxy_acme_companion]:https://hub.docker.com/r/nginxproxy/acme-companion
 [link_dockerhub_rcdailey_nextcloud-cronjob]:https://hub.docker.com/r/rcdailey/nextcloud-cronjob
 [link_repo_ncbu]:ncbu_scripts/ncbu
 [link_repo_ncbu_healthcheck]:ncbu_scripts/ncbu_healthcheck
