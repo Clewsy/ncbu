@@ -25,7 +25,7 @@ else
 		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Finished nextcloud data sync from backup.\n" | tee -a ${LOGFILE}; fi
 
 	## If a database container was defined and data exists, sync the ncbu database backup to the nextcloud database volume.
-	if [ -n "${NEXTCLOUD_DATABASE_CONTAINER}" ] && [ -n "$(ls -A /backup/nextcloud_db)"]; then
+	if [ -n "${NEXTCLOUD_DATABASE_CONTAINER}" ] && [ -n "$(ls -A /backup/nextcloud_db)" ]; then
 		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Nextcloud database restore from ncbu physical copy: Syncing /backup/nextcloud_db to ${NEXTCLOUD_DATABASE_CONTAINER} volume...\n" | tee -a ${LOGFILE}
 		rsync ${RSYNC_OPTIONS} /backup/nextcloud_db/* /mnt/nextcloud_db/.
 		printf "%b" "${BOLD}$(TIMESTAMP_f)${RESET} - Finished nextcloud database sync from backup.\n" | tee -a ${LOGFILE}; fi
