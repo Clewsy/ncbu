@@ -21,7 +21,7 @@ The container can be created fom the command line, for example:
 ```bash
 $ docker run \
 	--name nextcloud-bu \
-	--env NEXTCLOUD_CONTAINER=nextcloud-app \
+	--env NEXTCLOUD_CONTAINER=nextcloud \
 	--env NEXTCLOUD_DATABASE_CONTAINER=nextcloud-db \
 	--env NEXTCLOUD_BACKUP_CRON="0 0 * * *" \
 	--volume /etc/localtime:/etc/localtime:ro \
@@ -238,8 +238,8 @@ The *ncbu* and *ncbu_restore* scripts also trigger the logrotate command.  The l
 $ cat /home/docker/nextcloud-bu/ncbu.log
 
 2021-06-18 00:00:00 - Running ncbu (nextcloud backup)...
-2021-06-18 00:00:00 - Putting nextcloud-app into maintenance mode...
-2021-06-18 00:00:00 - Nextcloud data backup: Syncing nextcloud-app volume to /backup...
+2021-06-18 00:00:00 - Putting nextcloud into maintenance mode...
+2021-06-18 00:00:00 - Nextcloud data backup: Syncing nextcloud volume to /backup...
 2021/06/18 00:00:00 [35874] building file list
 2021/06/18 00:00:01 [35874] >f..t...... config/config.php
 2021/06/18 00:00:02 [35874] >f.st...... data/nextcloud.log
@@ -264,7 +264,7 @@ $ cat /home/docker/nextcloud-bu/ncbu.log
 2021/06/18 00:00:10 [35901] sent 386.56M bytes  received 436 bytes  110.45M bytes/sec
 2021/06/18 00:00:10 [35901] total size is 878.59M  speedup is 2.27
 2021-06-18 00:00:10 - Finished nextcloud database sync.
-2021-06-18 00:00:10 - Taking nextcloud-app out of maintenance mode...
+2021-06-18 00:00:10 - Taking nextcloud out of maintenance mode...
 2021-06-18 00:00:10 - Rotating logfile if required...
 2021-06-18 00:00:10 - All done. 
 ```
