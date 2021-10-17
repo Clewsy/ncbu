@@ -120,9 +120,9 @@ services:
     restart: unless-stopped
 
 ######################################### Nextcloud web app container
-  nextcloud-app:
+  nextcloud:
     image: nextcloud
-    container_name: nextcloud-app
+    container_name: nextcloud
     networks:
       - your.site_network
     depends_on:
@@ -130,9 +130,10 @@ services:
       - nginx-proxy-acme
       - nextcloud-db
     environment:
+      - OVERWRITEPROTOCOL=https
       - VIRTUAL_PORT=80
-      - VIRTUAL_HOST=${NEXTCLOUD_APP_URL}
-      - LETSENCRYPT_HOST=${NEXTCLOUD_APP_URL}
+      - VIRTUAL_HOST=${NEXTCLOUD_URL}
+      - LETSENCRYPT_HOST=${NEXTCLOUD_URL}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     volumes:
       - nextcloud-app:/var/www/html
@@ -145,9 +146,9 @@ services:
     container_name: nextcloud-cron
     network_mode: none
     depends_on:
-      - nextcloud-app
+      - nextcloud
     environment:
-      - NEXTCLOUD_CONTAINER_NAME=nextcloud-app
+      - NEXTCLOUD_CONTAINER_NAME=nextcloud
       - NEXTCLOUD_CRON_MINUTE_INTERVAL=5
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -160,11 +161,11 @@ services:
     container_name: nextcloud-bu
     network_mode: none
     depends_on:
-      - nextcloud-app
+      - nextcloud
       - nextcloud-db
     environment:
       - NEXTCLOUD_EXEC_USER=www-data                      # Name of the user that can execute the occ command in the nextcloud container (www-data by default).
-      - NEXTCLOUD_CONTAINER=nextcloud-app                 # Name of the nextcloud container.
+      - NEXTCLOUD_CONTAINER=nextcloud                     # Name of the nextcloud container.
       - NEXTCLOUD_DATABASE_CONTAINER=nextcloud-db         # Name of the nextcloud database container.
       - NEXTCLOUD_BACKUP_CRON=0 0 * * *                   # Run at midnight.
     volumes:
