@@ -1,6 +1,6 @@
 # ncbu
 
-Once configured, this docker container automates backup of a nextcloud instance (data and database) and also provdides a simple way to restore from said backup.
+Once configured, this docker container automates backup of a nextcloud instance (data and database) and also provides a simple way to restore from said backup.
 
 ## Build the Container Image
 
