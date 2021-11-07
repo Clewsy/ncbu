@@ -8,9 +8,15 @@ The following commands will build the container image on the local host (assumin
 ```bash
 $ git clone https://gitlab.com/clewsy/ncbu
 $ cd ncbu
-$ docker build -t clewsy/ncbu .
+$ docker build -t registry.gitlab.com/clewsy/ncbu .
 ```
-Alternatively the image can be pulled directly from docker hub:
+
+Or the image can be pulled directly from the GitLab container registry:
+```bash
+$ docker pull registry.gitlab.com/clewsy/ncbu
+```
+
+The GitLab container registry is recommended, but alternatively the image can be pulled directly from dockerhub:
 ```bash
 $ docker pull clewsy/ncbu
 ```
@@ -30,7 +36,7 @@ $ docker run \
 	--volume nextcloud-db:/mnt/nextcloud-db \
 	--volume /home/docker/nextcloud-bu:/backup \
 	--detach \
-	clewsy/ncbu
+	registry.gitlab.com/clewsy/ncbu
 ```
 
 However, this backup method is intended to be implemented with a **docker-compose.yml** file within which additional containers are configured for nextcloud and a database.  The ncbu container can be configured with the following parameters:
@@ -56,6 +62,7 @@ Notes:
 * You may encounter difficulty syncing the database files should you use the official MariaDB docker image.  Issues arise if the UID and GID of the user within the database container do not match the host user.  To avoid this, I recommend using the [mariadb docker image][link_dockerhub_linuxserver_mariadb] created by [linuxserver.io][link_web_linuxserver] (as per example below) wherein you can specify the UID and GID.
 * Similarly to the note above, be sure to confirm read access to all the files created by an ncbu backup.  If, for example, the backup is being synced off-site, the user duplicating the backup may not have read access by default for files owned by user **www-data**.  In this example, adding the user to the **www-data** group may be sufficient to enable read access.
 * Syncs can be confirmed and issues can be debugged by viewing the ncbu.log logfile.  This will be located in the directory to which **/backup** is bound.  In the example below the log file can be viewed from the host system with the command: `$ cat ./nextcloud-bu/ncbu.log`.
+* The GitLab container registry is the recommended image source for ncbu due to dockerhub changes making maintenance less streamlined.  However, the image will probably also be current if pulled directly from docker hub.  Just substitute **registry.gitlab.com/clewsy/ncbu** in the .yml file with **clewsy/ncbu**. 
 
 ### docker-compose.yml
 ```yml
@@ -157,7 +164,7 @@ services:
 
 ######################################### Nextcloud backup container (for periodically copying data and database)
   nextcloud-bu:
-    image: clewsy/ncbu
+    image: registry.gitlab.com/clewsy/ncbu
     container_name: nextcloud-bu
     network_mode: none
     depends_on:

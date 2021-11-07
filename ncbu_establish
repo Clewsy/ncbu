@@ -18,4 +18,4 @@ docker run \
 	--volume nextcloud-db:/mnt/nextcloud-db \
 	--volume /home/docker/nextcloud-bu:/backup \
 	--detach \
-	clewsy/ncbu
+	registry.gitlab.com/clewsy/ncbu
